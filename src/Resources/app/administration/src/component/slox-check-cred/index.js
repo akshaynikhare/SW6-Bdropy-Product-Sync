@@ -8,7 +8,7 @@ const { Component } = Shopware;
 Component.register('slox-check-cred', {
     template: template,
     
-    inject: ['AdminControlService'],
+    inject: ['AdminConfigService'],
 
     props: {
         check_output: {
@@ -52,7 +52,7 @@ Component.register('slox-check-cred', {
                 
 
                 if (flag) {
-                    let response = await  this.AdminControlService.credEnquire(
+                    let response = await  this.AdminConfigService.credEnquire(
                                                                     this.inputField_user.value,
                                                                     this.inputField_password.value
                                                                 );

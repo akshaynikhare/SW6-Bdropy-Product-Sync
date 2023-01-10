@@ -11,10 +11,9 @@ class AdminConfigService extends ApiService {
             apiRoute,
             {
                 user: user,
-                password: password
-            }, {
-            headers: this.getBasicHeaders()
-        }
+                password: password,
+                headers: this.getBasicHeaders()
+            }
         ).then((response) => {
             return ApiService.handleResponse(response);
         });
@@ -22,9 +21,9 @@ class AdminConfigService extends ApiService {
 
     async getBdropyCatogeryTree() {
 
-        const apiRoute = `${this.getApiBasePath()}/bdropy/categoriessubcategories`;
+        const apiRoute = `${this.getApiBasePath()}/bdropy/catogerytree`;
 
-        return await this.httpClient.get(
+        return await this.httpClient.post(
             apiRoute,
             {
                 headers: this.getBasicHeaders()
@@ -32,16 +31,16 @@ class AdminConfigService extends ApiService {
         ).then((response) => {
 
             return ApiService.handleResponse(response);
-           
+
         });
     }
 
-    
+
     async getCurrentMappingsTree() {
 
         const apiRoute = `${this.getApiBasePath()}/bdropy/currentmappings`;
 
-        return await this.httpClient.get(
+        return await this.httpClient.post(
             apiRoute,
             {
                 headers: this.getBasicHeaders()
@@ -49,44 +48,55 @@ class AdminConfigService extends ApiService {
         ).then((response) => {
 
             return ApiService.handleResponse(response);
-           
+
         });
     }
 
-    async addNewMappingServer(selBdropyCat,ourCatID) {
+    async addNewMappingServer(selBdropyCat, ourCatID) {
 
         const apiRoute = `${this.getApiBasePath()}/bdropy/addmappings`;
 
-        return await this.httpClient.get(
+        return await this.httpClient.post(
             apiRoute,
-            // apiRoute,{
-
-            // }
             {
+                sel_bdropy_cat: selBdropyCat, 
+                our_cat_id: ourCatID,
                 headers: this.getBasicHeaders()
             }
         ).then((response) => {
 
             return ApiService.handleResponse(response);
-           
+
         });
     }
     async deleteMappingServer(BdropyCat_value) {
 
         const apiRoute = `${this.getApiBasePath()}/bdropy/deletemappings`;
 
-        return await this.httpClient.get(
+        return await this.httpClient.post(
             apiRoute,
-            // apiRoute,{
-
-            // }
             {
+                bdropy_cat_value: BdropyCat_value ,
                 headers: this.getBasicHeaders()
             }
         ).then((response) => {
 
             return ApiService.handleResponse(response);
-           
+
+        });
+    }
+
+    async deleteallmappings() {
+
+        const apiRoute = `${this.getApiBasePath()}/bdropy/deleteallmappings`;
+
+        return await this.httpClient.post(
+            apiRoute,
+            {
+                headers: this.getBasicHeaders()
+            }
+        ).then((response) => {
+            return ApiService.handleResponse(response);
         });
     }
 

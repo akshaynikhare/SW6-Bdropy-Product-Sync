@@ -71,7 +71,16 @@
 
 
 		<!-- Controllers -->
-		<service id="slox_product_sync\Controller\adminController" public="true">
+		<service id="slox_product_sync\Controller\adminConfigController" public="true">
+			<argument type="service" id="service_container" />
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+			<argument type="service" id="slox_product_sync\Util\DebugLog" />
+			<argument type="service" id="slox_product_sync\Controller\bdroppy\BaseServer" />
+			<call method="setContainer">
+				<argument type="service" id="service_container" />
+			</call>
+		</service>
+		<service id="slox_product_sync\Controller\adminControlController" public="true">
 			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
 			<argument type="service" id="slox_product_sync\Util\DebugLog" />
 			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxfullsync" />
@@ -83,6 +92,7 @@
 				<argument type="service" id="service_container" />
 			</call>
 		</service>
+		
 		<!-- Controllers -->
 		<!-- scheduled task -->
 		<service id="slox_product_sync\Service\ScheduledTask\JbsloxSyncTask">

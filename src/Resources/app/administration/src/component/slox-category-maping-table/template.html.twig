@@ -16,7 +16,11 @@
                         <th style="width:49%;">
                             {{ $t('slox-category-maping-table.category-site') }}
                         </th>
-                        <th style="width:1%;"></th>
+                        <th style="width:1%;">
+                            <sw-button class="delete-button" :disabled="currentMappings === null" variant="danger" :square="false" :block="false" size="x-small" @click="deleteAllMapping()">
+                                {{ $t('slox-category-maping-table.delete-all-button-label') }}
+                            </sw-button>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -25,7 +29,7 @@
                             {{ currentMapping.BdropyCat.label }}
                         </td>
                         <td>
-                            {{ currentMapping.ourCat }}
+                            {{ currentMapping.ourCat.label }}
                         </td>
                         <td>
                             <sw-button class="delete-button" :disabled="false" variant="context" :square="false" :block="false" size="x-small" @click="deleteMapping(currentMapping.BdropyCat.value)">

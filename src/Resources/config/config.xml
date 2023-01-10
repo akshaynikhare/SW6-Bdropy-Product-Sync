@@ -64,6 +64,7 @@
 
     </card>
 
+
     <card>
         <title lang="en-US">Category Mapping</title>
 
@@ -77,11 +78,17 @@
             <entity>category</entity>
             <label>Categories Default EntryPoint</label>
         </component>
-        
-        <component name="slox-category-maping-table">
-            <name>sloxCheckCred</name>
-        </component>
 
+        <input-field type="text">
+            <name>jsonMapping</name>
+            <label>jsonMapping</label>
+            <disabled>True</disabled>
+        </input-field>
+
+        <component name="slox-category-maping-table">
+            <name>sloxMappingTable</name>
+        </component>
+       
     </card>
     
     <card>

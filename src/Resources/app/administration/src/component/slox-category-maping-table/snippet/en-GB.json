@@ -3,6 +3,7 @@
         "category-table-title":"Current Category Mapping",
         "add-button-label": "Add",
         "delete-button-label": "Delete",
+        "delete-all-button-label": "Delete All",
         "category-bdroppy":"Category in Bdroppy",
         "category-site":"Category in Site"
     }

@@ -74,28 +74,6 @@ Component.register('slox-category-maping-table', {
 
     },
 
-    watch: {
-        currentMappings: {
-            deep: true,
-            immediate: true,
-            handler(to, from) {
-                // if (from === undefined || to === from) {
-                //     console.log('nochnage');
-                //     return;
-                // }
-                // console.log('change');
-
-                this.currentMappings.forEach((currentMapping, currIndex) => {
-                    this.bdropyCatorgey.forEach((bdElement, bdIndex) => {
-                        if (bdElement.value === currentMapping.BdropyCat.value) {
-                            this.bdropyCatorgey.splice(bdIndex, 1);
-                        }
-                    });
-                });
-            }
-        }
-    },
-
     mounted() {
         this.isBdropyCatloading=true;
         this.mountedComponent();
@@ -110,20 +88,30 @@ Component.register('slox-category-maping-table', {
         },
 
         async refreshCurrentMappings() {
-            const temp1obj = [];
-            temp1obj = await this.AdminConfigService.getCurrentMappingsTree();
-            console.log(temp1obj);
-            // if (temp1obj.catogeryTree) {
-            //     var temp2Obj =temp1obj.catogeryTree;
-            //     if (
-            //         typeof temp2Obj === 'object' &&
-            //         !Array.isArray(temp2Obj) &&
-            //         temp2Obj !== null
-            //     ) {
-            //         this.bdropyCatorgey = Object.values(temp2Obj);
-            //         this.isBdropyCatloading=false;
-            //     }
-            // }
+          // this.isLoading=true;
+            const  temp1obj = await this.AdminConfigService.getCurrentMappingsTree();
+            if (temp1obj.jsonMapping) {
+                var temp2Obj =temp1obj.jsonMapping;
+                if (Array.isArray(temp2Obj) && temp2Obj.length >= 0) {
+                    console.log(temp1obj);
+                    this.currentMappings = temp2Obj;
+                    
+                }
+            }else{
+                this.currentMappings = [];
+            }
+
+
+            this.currentMappings.forEach((currentMapping, currIndex) => {
+                this.bdropyCatorgey.forEach((bdElement, bdIndex) => {
+                    if (bdElement.value === currentMapping.BdropyCat.value) {
+                        this.bdropyCatorgey.splice(bdIndex, 1);
+                    }
+                });
+            });
+
+            
+            this.isLoading=false;
         }, 
 
         async refreshBdropyList() {
@@ -144,14 +132,30 @@ Component.register('slox-category-maping-table', {
     
         async addNewMappingServer(selBdropyCat,ourCatID) {
             const temp1obj = await this.AdminConfigService.addNewMappingServer(selBdropyCat,ourCatID);
+            
+            this.$nextTick(() => {
+                this.refreshCurrentMappings();
+            });
             return ;
         },
 
         async deleteMappingServer(BdropyCat_value) {
             const temp1obj = await this.AdminConfigService.deleteMappingServer(BdropyCat_value);
+
+            this.$nextTick(() => {
+                this.refreshCurrentMappings();
+            });
             return ;
         },
 
+        async deleteAllMappingServer() {
+            const temp1obj = await this.AdminConfigService.deleteallmappings();
+
+            this.$nextTick(() => {
+                this.refreshCurrentMappings();
+            });
+            return ;
+        },
 
 
         addNewMapping() {
@@ -160,12 +164,7 @@ Component.register('slox-category-maping-table', {
             const selBdropyCat= this.bdropyCatorgey .find( c => c.value === this.newMapping.BdropyCatID);
             
             const tem1 = this.addNewMappingServer(selBdropyCat,this.newMapping.ourCatID);
-            this.refreshCurrentMappings();
 
-            // this.currentMappings.push({
-            //     BdropyCat: selBdropyCat,
-            //     ourCat: this.newMapping.ourCatID
-            // });
 
             this.newMapping.BdropyCatID=null;
             this.newMapping.ourCatID=null;
@@ -173,20 +172,12 @@ Component.register('slox-category-maping-table', {
         },
         
         deleteMapping(BdropyCat_value) {
-
             this.isLoading=true;
-            
             const tem1 = this.deleteMappingServer(BdropyCat_value);
-            this.refreshCurrentMappings();
-
-            this.isLoading=false;
-
-
-            // this.currentMappings.forEach((element, index) => {
-            //     if (element.BdropyCat.value === BdropyCat_value) {
-            //         this.currentMappings.splice(index, 1);
-            //     }
-            // });
+        },
+        deleteAllMapping() {
+            this.isLoading=true;
+            const tem1 = this.deleteAllMappingServer();
         }
     },
 

@@ -180,7 +180,7 @@ class BaseServer
             if($SubCategories){
                 foreach ($SubCategories as $SubCategorie){
                     $longCategoriesList[$SubCategorie["id"]] = [
-                        'value'=>$SubCategorie["id"],
+                        'value'=>$Categorie["code"]."_".$SubCategorie["code"],
                         'label'=>$Categorie["code"]." > ".$SubCategorie["code"],
                         'code'=>$SubCategorie["code"],
                         'parent_code'=>$Categorie["code"]

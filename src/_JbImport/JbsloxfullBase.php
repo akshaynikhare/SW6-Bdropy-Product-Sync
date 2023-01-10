@@ -341,19 +341,6 @@ class JbsloxfullBase extends AbstractController
         }
     }
 
-    public function getDeliveryTime($deliveryTimeName)
-    {
-
-        $repository = $this->container->get('delivery_time.repository'); //shipping_method.repository
-        $criteria = (new Criteria())->addFilter(new EqualsFilter('name', $deliveryTimeName));
-
-        $deliveryTime = $repository->search($criteria, $this->createContextWithRules())->first();
-
-        if ($deliveryTime) {
-            return $deliveryTime; //->getId();
-        }
-        return false;
-    }
 
     /**
      * @param $productNumber
@@ -394,11 +381,6 @@ class JbsloxfullBase extends AbstractController
 
         return $entities->getEntities();
     }
-
-
-
-
-
 
 
 
@@ -617,15 +599,19 @@ class JbsloxfullBase extends AbstractController
                 //'ean' => '',
 
                 "categories" => [
-                    ["id" => $this->systemConfigService->get('slox_product_sync.config.ImportToCategories')]
+                    ["id" => $this->getMappedCatogerId($line["attributes"])]
                 ],
                 'deliveryTime' => $this->getdeliveryTimePayload(),
-                //"categories" => $this->getCategoryPayloads($line,$this->systemConfigService->get('slox_product_sync.config.ImportToCategories')),
                 //'properties' => $this->getPropertiesPayloads($line),
                 //'maxPurchase' => 5,
 
             ],
         ];
+
+
+        
+        //var_dump($payload);
+        //die();
 
         if ($product == null) {
             $productMediaID = Uuid::randomHex();
@@ -680,24 +666,36 @@ class JbsloxfullBase extends AbstractController
         return $payload;
     }
 
-    public function getProuctClildUpdatedPayload($productCode, $model)
+
+
+
+
+
+    
+
+    public function getMappedCatogerId($attributes)
     {
-        $groupId = $this->getorGenratePropertyGroupByName('model');
-        $payload = [
-            "productNumber" => "" . $productCode . "",
-            "stock" => $model["availability"],
-            "price" => [[
-                'net' => floatval($model['sellPrice'] / 1.19),
-                'gross' => floatval($model['sellPrice']),
-                'linked' => false,
-                'currencyId' => Defaults::CURRENCY,
-            ]],
-            "options" => [
-                ["id" => Uuid::randomHex(), "groupId" => $groupId, "name" => $model["model"]]
-            ]
-        ];
-        return $payload;
+
+
+        
+        $catMap = (array) json_decode(((string) $this->systemConfigService->get('slox_product_sync.config.jsonMapping')));
+
+        if (count($catMap) > 0) {
+   
+            foreach ($catMap as $item) {
+                if ($item->BdropyCat->value === ($attributes["category"].'_'.$attributes["subcategory"])) {
+                    $categoryRepository = $this->container->get('category.repository');
+                    $catSystem = $categoryRepository->search(new Criteria([$item->ourCat->id]), Context::createDefaultContext())->first();
+                    if($catSystem){
+                        return $item->ourCat->id;
+                    }
+                }
+            }
+        }
+        return $this->systemConfigService->get('slox_product_sync.config.ImportToCategories');
+
     }
+
 
     public function getProuctClildPayload($productCode, $model)
     {
@@ -729,37 +727,6 @@ class JbsloxfullBase extends AbstractController
         return $payload_0_configuratorSettings;
     }
 
-    /**
-     * @param $tagName
-     * @return false|\Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenContainerEvent|TagEntity
-     */
-    public function getProductTag($tagName)
-    {
-
-        /** @var EntityRepositoryInterface $repository */
-        $repository = $this->container->get('tag.repository');
-        $criteria = (new Criteria())->addFilter(new EqualsFilter('name', $tagName));
-
-        /** @var TagEntity $productTag */
-        $productTag = $repository->search($criteria, $this->createContextWithRules())->first();
-
-        if ($productTag) {
-            return $productTag;
-        } else {
-            $productTag = $repository->create(
-                array(
-                    [
-                        'id' => Uuid::randomHex(),
-                        'name' => $tagName
-                    ]
-                ),
-                $this->createContextWithRules()
-            );
-
-            return $productTag;
-        }
-        return false;
-    }
 
     public function getManufacturerId($manufacturerName): string
     {
@@ -866,30 +833,6 @@ class JbsloxfullBase extends AbstractController
 
         return $mediaArray;
     }
-
-
-
-
-    public function getCategoryIdByName($categoryName, $parentCategoryID = null): string
-    {
-        /** @var EntityRepositoryInterface $repository */
-        $repository = $this->container->get('category.repository');
-        $criteria = (new Criteria())->addFilter(new EqualsFilter('name', $categoryName));
-        if ($parentCategoryID) {
-            $criteria->addFilter(new EqualsFilter('parentId', $parentCategoryID));
-        }
-
-        /** @var CategoryEntity $categoryEntity */
-        $categoryEntity = $repository->search($criteria, $this->createContextWithRules())->first();
-
-        if ($categoryEntity instanceof CategoryEntity)
-            return $categoryEntity->getId();
-
-        return "";
-    }
-
-
-
 
 
     public function getPropertiesPayloads($line)
@@ -1009,66 +952,6 @@ class JbsloxfullBase extends AbstractController
     }
 
 
-    public function getCategoryPayloads($line, $ImportToCategories = 'Catalogue #1')
-    {
-
-        if ($this->logLevel == 1) {
-            $this->createLog("Create Category START");
-        }
-
-        if (isset($line['attributes']['subcategory']) && isset($line['attributes']['category'])) {
-            $line['category_name'] = $line['attributes']['category'] . '|' . $line['attributes']['subcategory'];
-        } else  if ((!isset($line['attributes']['subcategory'])) && isset($line['attributes']['category'])) {
-            $line['category_name'] = $line['attributes']['category'];
-        }
-
-
-        $categoryArray = [];
-        $extraCharsToRemove = array("\"", "'", "`", "^", "~");
-
-
-        if (!isset($line['parent_category'])) {
-            $line['parent_category'] = $ImportToCategories;
-        } else {
-            $line['parent_category'] = str_replace($extraCharsToRemove, "", iconv("utf-8", "ASCII//TRANSLIT", $line['parent_category']));
-        }
-
-
-        $parentCategoryID = $this->getCategoryIdByName($line['parent_category']);
-        if ($this->logLevel == 1) {
-            $this->createLog("parentCategoryID " . $parentCategoryID);
-        }
-
-
-        if (isset($line['category_name'])) {
-            $line['category_name'] = str_replace($extraCharsToRemove, "", iconv("utf-8", "ASCII//TRANSLIT",  $line['category_name']));
-
-            $categoryNames = explode("|", $line['category_name']);
-            foreach ($categoryNames as $categoryName) {
-                $categoryID = $this->getCategoryIdByName($categoryName, $parentCategoryID);
-                if ($categoryID != "") {
-                    $categoryArray[] = ["id" => $categoryID];
-                } else {
-                    $categoryID = Uuid::randomHex();
-                    if ($parentCategoryID) {
-                        $categoryArray[] = ['id' => $categoryID, 'name' => $categoryName, 'parentId' => $parentCategoryID];
-                    } else {
-                        $categoryArray[] = ['id' => $categoryID, 'name' => $categoryName];
-                    }
-                }
-                $parentCategoryID = $categoryID;
-            }
-        } else {
-            $categoryArray = [
-                ["id" => $parentCategoryID]
-            ];
-        }
-
-        return $categoryArray;
-    }
-
-
-
 
 
 
@@ -1128,7 +1011,6 @@ class JbsloxfullBase extends AbstractController
         return $mediaId;
     }
 
-
     public function getTaxId(): string
     {
         $result = $this->connection->fetchColumn('
@@ -1144,7 +1026,6 @@ class JbsloxfullBase extends AbstractController
 
         return (string) $result;
     }
-
 
 
     /**
