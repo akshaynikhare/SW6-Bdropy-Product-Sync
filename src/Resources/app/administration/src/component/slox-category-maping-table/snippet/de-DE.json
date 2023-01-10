@@ -1,0 +1,9 @@
+{
+    "slox-category-maping-table": {
+        "category-table-title":"Current Category Mapping",
+        "add-button-label": "Add",
+        "delete-button-label": "Delete",
+        "category-bdroppy":"Category in Bdroppy",
+        "category-site":"Category in Site"
+    }
+}

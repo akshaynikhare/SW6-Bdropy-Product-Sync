@@ -1,0 +1,34 @@
+{
+    "slox-bdropy-import": {
+        "title":"Bdropy.com Catalogue Sync",
+        "tab":{
+            "fullsync":"Full Catalogue Sync",
+            "newsync":"Import New only",
+            "olddelete":"Delete",
+            "productupdate":"Update",
+            "last-sync-label":"Last Synced :",
+            "current-status-label":"Current Status:",
+            "current-status-runing":"Running",
+            "current-status-stopped":"Stopped",
+            "output-log-label":"Output Log"
+
+        },
+        "fullsync":{
+            "longtext":"Full Catalogue Sync : this will delete old product , update existing product , add new product for the Bdropy Catalogue.",
+            "start-buttton-label":"Start Full Catalogue Sync"
+        },
+        "newsync":{
+            "longtext":"Import New Article only : this will add new product for the Bdropy Catalogue.",
+            "start-buttton-label":"Import New Product Only"
+        },
+        "olddelete":{
+            "longtext":"Delete old Product : this will delete old product that are not in Bdropy Catalogue but are still in this website.",
+            "start-buttton-label":"Delete Old Product not is Bdropy Catalogue"
+        },
+        "productupdate":{
+            "longtext":"Update Product : this will update existing product from the website which matches in Bdropy Catalogue.",
+            "start-buttton-label":"Start update product"
+        } 
+
+    }
+}

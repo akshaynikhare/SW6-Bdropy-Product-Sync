@@ -1,0 +1,39 @@
+{
+    "name": "cadnative/slox_product_sync",
+    "description": "developed by Akshay Nikhare",
+    "version": "0.0.6",
+    "type": "shopware-platform-plugin",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "slox_product_sync\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "guzzlehttp/guzzle": ">=6.4",
+        "shopware/core": "*",
+        "shopware/administration": "*"
+    },
+    "authors": [{
+        "name": "cadnative / Akshay Nikhare",
+        "email": "info@cadnativ.com",
+        "homepage": "https://github.com/akshaynikhare",
+        "role": "Developer"
+    }],
+    "extra": {
+        "shopware-plugin-class": "slox_product_sync\\slox_product_sync",
+        "plugin-icon": "src/Resources/config/plugin.png",
+        "label": {
+            "de-DE": "Product & Sync From bdroppy.com",
+            "en-GB": "Product & Sync From bdroppy.com"
+        },
+        "description": {
+            "en-GB": "developed by cadnative / Akshay Nikhare",
+            "de-DE": "entwickelt von cadnative / Akshay Nikhare"
+        }
+    },
+    "require-dev": {
+        "phpro/grumphp-shim": "^1.0"
+    }
+}

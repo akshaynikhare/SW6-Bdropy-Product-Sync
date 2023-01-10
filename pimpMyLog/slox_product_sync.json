@@ -1,0 +1,23 @@
+{
+        "shopware": {
+        "display"   : "slox_product_sync Log",
+        "path"      : "/var/www/html/var/log/slox_product_sync*.log",
+        "notify": true,
+        "refresh"   : 5,
+        "multiline" : "",
+        "format"    : {
+            "multiline": "",
+            "regex"    : "@\\[(.*?)\\]\\s*?\\w*\\.(.*?):\\s?((.*?)\\s*?(?:at|in)\\s*?(.*?)\\s*?(?:on line|line)\\s*([0-9]*).*?|(.*?))$@",
+            "match"    : {
+                "Date"     : 1,
+                "Severity" : 2,
+                "Log"    : 3
+            },
+            "types"    : {
+                "Date"     : "date:H:i:s",
+                "Severity" : "badge:severity",
+                "File"     : "pre"
+            }
+        }
+    }
+}

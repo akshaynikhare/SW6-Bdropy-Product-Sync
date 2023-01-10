@@ -1,0 +1,50 @@
+.slox-category-maping-table__block {
+    .new-catogery-mapping {
+
+        table,
+        th,
+        td {
+            border: 2px solid #fff0;
+        }
+
+        .sw-button {
+            margin-bottom: 7px;
+        }
+    }
+
+    .current-catogery-mapping {
+
+
+        table {
+            border: 1px solid #d8dde6;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: center;
+            border-radius: 0.3em;
+            overflow: hidden;
+
+            th {
+                padding: 9px;
+                font-weight: 700;
+                background: #dce8ff;
+                border-bottom: 3px solid #7b89a1;
+            }
+
+            td{
+                padding: 7px;
+                .delete-button{
+                    color: red;
+                }
+            }
+            th.title {
+                background: #303a4f;
+                color: #fff;
+            }
+
+            tr:nth-child(even) {
+                background-color: #f5f5f5;
+            }
+
+        }
+    }
+}

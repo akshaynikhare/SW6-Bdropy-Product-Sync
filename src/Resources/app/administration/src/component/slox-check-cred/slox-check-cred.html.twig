@@ -1,0 +1,8 @@
+{% block slox_check_ftpCred %}
+	<div class="slox-check-cred__block">
+		<sw-button variant="contrast" @click="checkCred"  :isLoading="isLoading">
+		Test credentials  
+		</sw-button>
+		<span> {{ check_output }}</span>
+	</div>
+{% endblock %}

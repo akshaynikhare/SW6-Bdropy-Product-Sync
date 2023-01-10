@@ -1,0 +1,51 @@
+<div class="slox-bdropy-import-productupdate">
+        <sw-card :hero="false" :isLoading="false">
+                <sw-container columns="3fr 1fr">
+                        <sw-card-section divider="right">
+                                <span>
+                                        {{ $t('slox-bdropy-import.productupdate.longtext') }}
+                                </span>
+                                <br/>
+                                <br/>
+                                <sw-button :disabled="false" variant="ghost" :square="false" :block="false" :isLoading="isLoading" @click="onSubmit">
+                                {{ $t('slox-bdropy-import.productupdate.start-buttton-label') }}
+                        </sw-button>
+                        </sw-card-section>
+                        <sw-card-section>
+                                <div class="p-2">
+                                        <strong>
+                                                {{ $t('slox-bdropy-import.tab.last-sync-label') }}
+                                        </strong>
+                                        <br/>
+                                        {{ lastSynced }}
+                                        <br/>
+                                        <br/>
+                                </div>
+                                <div>
+                                        <strong>
+                                                {{ $t('slox-bdropy-import.tab.current-status-label') }}
+                                        </strong>
+                                        <br/>
+                                        <div v-if="isRunning">
+                                                {{ $t('slox-bdropy-import.tab.current-status-runing') }}
+                                        </div>
+                                        <div v-else>
+                                                {{ $t('slox-bdropy-import.tab.current-status-stopped') }}
+                                        </div>
+
+                                </div>
+                        </sw-card-section>
+                </sw-container>
+        </sw-card>
+        <div>
+                <sw-card class="output-card" :hero="false" :isloading="false" :large="false" :title="$t('slox-bdropy-import.tab.output-log-label')">
+                        <template v-slot:header-right>
+                                <sw-button :isLoading="isLoading" :disabled="true" variant="context" :square="true" :block="false" ></sw-button>
+                        </template>
+                        <sw-container columns="1fr">
+                                <div class="output-log">{{ output|nl2br }}
+                                </div>
+                        </sw-container>
+                </sw-card>
+        </div>
+</div>

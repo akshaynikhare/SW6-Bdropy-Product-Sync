@@ -1,0 +1,30 @@
+<sw-page class="slox-bdropy-import-page">
+    <template #smart-bar-header>
+        <h2>
+            {{ $t('slox-bdropy-import.title') }}
+        </h2>
+    </template>
+
+    <template #content>
+        <sw-card-view>
+            <sw-tabs>
+                <sw-tabs-item route="fullsync" :title="$t('slox-bdropy-import.tab.fullsync')">
+                    {{ $t('slox-bdropy-import.tab.fullsync') }}
+                </sw-tabs-item>
+                <sw-tabs-item route="newsync" :title="$t('slox-bdropy-import.tab.newsync')">
+                    {{ $t('slox-bdropy-import.tab.newsync') }}
+                </sw-tabs-item>
+                <sw-tabs-item route="productupdate" :title="$t('slox-bdropy-import.tab.productupdate')">
+                    {{ $t('slox-bdropy-import.tab.productupdate') }}
+                </sw-tabs-item>
+                <sw-tabs-item route="olddelete" :title="$t('slox-bdropy-import.tab.olddelete')">
+                    {{ $t('slox-bdropy-import.tab.olddelete') }}
+                </sw-tabs-item>
+
+            </sw-tabs>
+
+            <router-view></router-view>
+            <sw-loader v-else></sw-loader>
+        </sw-card-view>
+    </template>
+</sw-page>

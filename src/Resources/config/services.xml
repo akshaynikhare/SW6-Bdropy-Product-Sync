@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+	<services>
+
+
+		<service id="slox_product_sync\_JbImport\JbsloxfullBase">
+			<argument type="service" id="service_container" />
+			<argument type="service" id="sales_channel.product.repository" />
+			<argument type="service" id="Shopware\Core\Content\Media\MediaService" />
+			<argument type="service" id="Shopware\Core\Content\Media\File\FileSaver" />
+			<argument type="service" id="Doctrine\DBAL\Connection" />
+			<argument type="service" id="slox_product_sync\Controller\bdroppy\BaseServer" />
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+		</service>
+
+		<service id="slox_product_sync\_JbImport\Jbsloxfullsync">
+			<argument type="service" id="service_container" />
+			<argument type="service" id="sales_channel.product.repository" />
+			<argument type="service" id="Shopware\Core\Content\Media\MediaService" />
+			<argument type="service" id="Shopware\Core\Content\Media\File\FileSaver" />
+			<argument type="service" id="Doctrine\DBAL\Connection" />
+			<argument type="service" id="slox_product_sync\Controller\bdroppy\BaseServer" />
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+		</service>
+
+		<service id="slox_product_sync\_JbImport\Jbsloxnewsync">
+			<argument type="service" id="service_container" />
+			<argument type="service" id="sales_channel.product.repository" />
+			<argument type="service" id="Shopware\Core\Content\Media\MediaService" />
+			<argument type="service" id="Shopware\Core\Content\Media\File\FileSaver" />
+			<argument type="service" id="Doctrine\DBAL\Connection" />
+			<argument type="service" id="slox_product_sync\Controller\bdroppy\BaseServer" />
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+		</service>
+
+		<service id="slox_product_sync\_JbImport\Jbsloxolddelete">
+			<argument type="service" id="service_container" />
+			<argument type="service" id="sales_channel.product.repository" />
+			<argument type="service" id="Shopware\Core\Content\Media\MediaService" />
+			<argument type="service" id="Shopware\Core\Content\Media\File\FileSaver" />
+			<argument type="service" id="Doctrine\DBAL\Connection" />
+			<argument type="service" id="slox_product_sync\Controller\bdroppy\BaseServer" />
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+		</service>
+
+		<service id="slox_product_sync\_JbImport\Jbsloxproductupdate">
+			<argument type="service" id="service_container" />
+			<argument type="service" id="sales_channel.product.repository" />
+			<argument type="service" id="Shopware\Core\Content\Media\MediaService" />
+			<argument type="service" id="Shopware\Core\Content\Media\File\FileSaver" />
+			<argument type="service" id="Doctrine\DBAL\Connection" />
+			<argument type="service" id="slox_product_sync\Controller\bdroppy\BaseServer" />
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+		</service>
+
+		<service id="slox_product_sync\Controller\bdroppy\BaseServer" public="true">
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+			<argument type="service" id="slox_product_sync\Util\DebugLog" />
+		</service>
+		<service id="slox_product_sync\Util\DebugLog" public="true">
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+			<argument type="service" id="slox_product_sync.logger" />
+		</service>
+		<service id="slox_product_sync.logger" class="Monolog\Logger">
+			<factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating" />
+			<argument type="string">
+				slox_product_sync
+			</argument>
+		</service>
+
+
+
+		<!-- Controllers -->
+		<service id="slox_product_sync\Controller\adminController" public="true">
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+			<argument type="service" id="slox_product_sync\Util\DebugLog" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxfullsync" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxnewsync" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxolddelete" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxproductupdate" />
+			<argument type="service" id="slox_product_sync\Controller\bdroppy\BaseServer" />
+			<call method="setContainer">
+				<argument type="service" id="service_container" />
+			</call>
+		</service>
+		<!-- Controllers -->
+		<!-- scheduled task -->
+		<service id="slox_product_sync\Service\ScheduledTask\JbsloxSyncTask">
+			<tag name="shopware.scheduled.task" />
+		</service>
+		<service id="slox_product_sync\Service\ScheduledTask\JbsloxSyncTaskHandler">
+			<argument type="service" id="scheduled_task.repository" />
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxfullsync" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxnewsync" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxolddelete" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxproductupdate" />
+			<tag name="messenger.message_handler" />
+		</service>
+		<!-- scheduled task -->
+
+
+	</services>
+</container>

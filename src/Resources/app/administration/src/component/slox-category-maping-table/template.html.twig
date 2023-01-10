@@ -1,0 +1,66 @@
+{% block slox_category_maping_table %}
+    <div class="slox-category-maping-table__block">
+        <sw-container class="current-catogery-mapping">
+            <sw-loader size="50px" v-if="isLoading" />
+            <table v-else>
+                <thead>
+                    <tr>
+                        <th colspan="3" class="title">
+                            {{ $t('slox-category-maping-table.category-table-title') }}
+                        </th>
+                    </tr>
+                    <tr>
+                        <th style="width:49%;">
+                            {{ $t('slox-category-maping-table.category-bdroppy') }}
+                        </th>
+                        <th style="width:49%;">
+                            {{ $t('slox-category-maping-table.category-site') }}
+                        </th>
+                        <th style="width:1%;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="currentMapping in currentMappings">
+                        <td>
+                            {{ currentMapping.BdropyCat.label }}
+                        </td>
+                        <td>
+                            {{ currentMapping.ourCat }}
+                        </td>
+                        <td>
+                            <sw-button class="delete-button" :disabled="false" variant="context" :square="false" :block="false" size="x-small" @click="deleteMapping(currentMapping.BdropyCat.value)">
+                                {{ $t('slox-category-maping-table.delete-button-label') }}
+                            </sw-button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </sw-container>
+        <sw-container class="new-catogery-mapping">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:49%;"></th>
+                        <th style="width:49%;"></th>
+                        <th style="width:1%;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width:49%;">
+                            <sw-single-select :is-loading="isBdropyCatloading" :options="bdropyCatorgey" v-model="newMapping.BdropyCatID" disableSearchFunction="true" size="medium" :disabled="false" />
+                        </td>
+                        <td style="width:49%;">
+                            <sw-entity-single-select size="medium" :disabled="false" entity="category" v-model="newMapping.ourCatID" show-clearable-button />
+                        </td>
+                        <td style="width:1%;">
+                            <sw-button :isloading="isBdropyCatAdding" :disabled="newMapping.ourCatID === null ||  newMapping.BdropyCatID === null" variant="contrast" :square="false" :block="false" @click="addNewMapping">
+                                {{ $t('slox-category-maping-table.add-button-label') }}
+                            </sw-button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </sw-container>
+    </div>
+{% endblock %}
