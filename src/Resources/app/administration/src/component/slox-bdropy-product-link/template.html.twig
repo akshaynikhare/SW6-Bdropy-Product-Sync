@@ -1,0 +1,23 @@
+<div class="slox--bdropy-product-link " v-if="visible">
+	<sw-alert>
+		<p>
+			This product in Imported from Bdropy.com.
+		</p>
+
+        {% if product.extensions.sloxBDropyProduct.importedOn != '' %}
+			<br/>
+			<p>
+				imported On :
+				{{product.extensions.sloxBDropyProduct.importedOn|date('Y-m-d H:i:s')}}</p>
+
+		{% endif %}
+		{% if product.extensions.sloxBDropyProduct.lastUpdated  != '' %}
+			<br/>
+			<p>
+				last updated On :
+				{{product.extensions.sloxBDropyProduct.lastUpdated|date('Y-m-d H:i:s')}}</p>
+
+		{% endif %}
+
+	</sw-alert>
+</div>

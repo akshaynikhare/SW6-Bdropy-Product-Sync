@@ -37,6 +37,13 @@
             <label>Run Automatic Sync</label>
             <defaultValue>true</defaultValue>
         </input-field>
+        <input-field type="text">
+            <name>syncTimeInterval</name>
+            <label>Sync Every </label>
+            <defaultValue> 5 hour </defaultValue>
+            <placeholder> 5 hour </placeholder>
+            <disabled>True</disabled>
+        </input-field>
         
         <input-field type="single-select">
             <name>cornSyncMethod</name>
@@ -78,12 +85,6 @@
             <entity>category</entity>
             <label>Categories Default EntryPoint</label>
         </component>
-
-        <input-field type="text">
-            <name>jsonMapping</name>
-            <label>jsonMapping</label>
-            <disabled>True</disabled>
-        </input-field>
 
         <component name="slox-category-maping-table">
             <name>sloxMappingTable</name>

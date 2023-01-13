@@ -72,7 +72,7 @@ class Jbsloxolddelete extends JbsloxfullBase
         ], 200);
     }
 
-    public function startTask($whoStarted = null)
+    public function startTask($whoStarted = null,$specialTaskString=null)
     {
         $this->lastlog = '';
 
@@ -93,7 +93,12 @@ class Jbsloxolddelete extends JbsloxfullBase
 
         try {
             $this->checkConfig();
-            $this->importProductsFromBdroppy("articles");
+            if($specialTaskString==="DeleteAll"){
+                $this->deleteAllProducts();
+            }else{
+                $this->importProductsFromBdroppy("articles");
+            }
+            
         } catch (Exception $e) {
             $this->createLog("Exiting!! Error:" . $e->getMessage());
         }
@@ -137,6 +142,13 @@ class Jbsloxolddelete extends JbsloxfullBase
         foreach ($ArticleList as $line) {
             array_push($allbdropyArticleCodeArray, $line['code']);
         }
-        $this->deleteOldProduct($allbdropyArticleCodeArray);
+        $this->deleteOldProductReferingBDroppy($allbdropyArticleCodeArray);
+    }
+
+    private function deleteAllProducts()
+    {
+        $this->setIniConfig();
+        $this->createLog("Deleting All Bdropy Articles....");
+        $this->deleteAllBDroppyProducts();
     }
 }

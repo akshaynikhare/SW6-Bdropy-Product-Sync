@@ -143,6 +143,6 @@ class Jbsloxfullsync extends JbsloxfullBase
         foreach ($ArticleList as $line) {
             array_push($allbdropyArticleCodeArray, $line['code']);
         }
-        $this->deleteOldProduct($allbdropyArticleCodeArray);
+        $this->deleteOldProductReferingBDroppy($allbdropyArticleCodeArray);
     }
 }

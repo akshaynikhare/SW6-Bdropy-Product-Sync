@@ -201,6 +201,32 @@ class adminControlController extends AbstractController
             ], 200);
         }
     }
+    
+    /**
+     * @RouteScope(scopes={"api"})
+     * @Route("/api/slox_product_sync/olddeleteall", name="api.slox_product_sync.olddeleteall", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/olddeleteall", name="api.slox_product_sync_old.olddeleteall", defaults={"auth_required"=false}, methods={"GET"})
+     */
+    public function olddeleteall(Request $request): JsonResponse
+    {
+        try {
+            $response = $this->jbsloxolddelete->startTask(null,'DeleteAll');
+
+            $responsejosn = new JsonResponse([
+                'success' => true,
+                'message' => 'Delete Sucessfully',
+                'log' => $response
+            ], 200);
+
+            return $responsejosn;
+        } catch (Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 200);
+        }
+    }
+
 
 
     /**

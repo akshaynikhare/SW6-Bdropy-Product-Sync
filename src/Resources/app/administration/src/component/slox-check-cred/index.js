@@ -50,14 +50,11 @@ Component.register('slox-check-cred', {
                     throw 'please provide  Password';
                 }
                 
-
                 if (flag) {
                     let response = await  this.AdminConfigService.credEnquire(
                                                                     this.inputField_user.value,
                                                                     this.inputField_password.value
                                                                 );
-
-                             
                         if (response.success) {
                             this.check_output = response.message;
                         } else if (response.message && response.message != '') {

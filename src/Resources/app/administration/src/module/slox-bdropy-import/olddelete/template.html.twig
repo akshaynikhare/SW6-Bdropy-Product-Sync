@@ -6,10 +6,18 @@
                                         {{ $t('slox-bdropy-import.olddelete.longtext') }}
                                 </span>
                                 <br/>
+                                <sw-button :disabled="false" variant="contrast" :square="false" :block="false" :isLoading="isLoading" @click="onSubmit">
+                                         {{ $t('slox-bdropy-import.olddelete.start-buttton-label') }}
+                                </sw-button>
                                 <br/>
-                                <sw-button :disabled="false" variant="danger" :square="false" :block="false" :isLoading="isLoading" @click="onSubmit">
-                                {{ $t('slox-bdropy-import.olddelete.start-buttton-label') }}
-                        </sw-button>
+                                <br/>
+                                <span>
+                                        {{ $t('slox-bdropy-import.olddelete.deleteAlltext') }}
+                                </span>
+                                <br/>
+                                <sw-button :disabled="false" variant="danger" :square="false" :block="false" :isLoading="isLoading" @click="onDeleteAll">
+                                        {{ $t('slox-bdropy-import.olddelete.deleteAll-buttton-label') }}
+                                </sw-button>
                         </sw-card-section>
                         <sw-card-section>
                                 <div class="p-2">

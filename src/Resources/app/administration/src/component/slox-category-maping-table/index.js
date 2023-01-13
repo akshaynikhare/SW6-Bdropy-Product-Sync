@@ -90,12 +90,10 @@ Component.register('slox-category-maping-table', {
         async refreshCurrentMappings() {
           // this.isLoading=true;
             const  temp1obj = await this.AdminConfigService.getCurrentMappingsTree();
-            if (temp1obj.jsonMapping) {
-                var temp2Obj =temp1obj.jsonMapping;
+            if (temp1obj.map) {
+                var temp2Obj =temp1obj.map;
                 if (Array.isArray(temp2Obj) && temp2Obj.length >= 0) {
-                    console.log(temp1obj);
                     this.currentMappings = temp2Obj;
-                    
                 }
             }else{
                 this.currentMappings = [];

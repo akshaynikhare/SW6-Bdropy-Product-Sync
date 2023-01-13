@@ -88,7 +88,7 @@ class Jbsloxproductupdate extends JbsloxfullBase
             $this->createLog(" Process Started by > " . $whoStarted);
         }
 
-        $this->WiteWeStartedImport();
+       $this->WiteWeStartedImport();
         $this->createLog("------------------------------------------Import Started------------------------------------------");
 
         try {

@@ -88,15 +88,15 @@ class Jbsloxnewsync extends JbsloxfullBase
             $this->createLog(" Process Started by > " . $whoStarted);
         }
 
-        //$this->WiteWeStartedImport();
+        $this->WiteWeStartedImport();
         $this->createLog("------------------------------------------Import Started------------------------------------------");
 
-        //try {
+        try {
             $this->checkConfig();
             $this->importProductsFromBdroppy("articles");
-        // } catch (Exception $e) {
-        //     $this->createLog("Exiting!! Error:" . $e->getMessage());
-        // }
+        } catch (Exception $e) {
+            $this->createLog("Exiting!! Error:" . $e->getMessage());
+        }
         $this->WiteWeStopedImport();
         $this->createLog("------------------------------------------Import Ended------------------------------------------");
 

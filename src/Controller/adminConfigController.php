@@ -129,6 +129,7 @@ class adminConfigController extends AbstractController
             ], 200);
         }
     }
+    
 
     /**
      * @RouteScope(scopes={"api"})
@@ -141,7 +142,7 @@ class adminConfigController extends AbstractController
 
             return new JsonResponse([
                 'success' => true,
-                'jsonMapping' => json_decode($this->systemConfigService->get('slox_product_sync.config.jsonMapping'))
+                'map' => $this->baseServer->getCategoryMappingArray()
             ], 200);
         } catch (Exception $e) {
             return new JsonResponse([
@@ -158,8 +159,6 @@ class adminConfigController extends AbstractController
      */
     public function bdropy_addmappings(Request $request): JsonResponse
     {
-        // $this->systemConfigService->set('slox_product_sync.config.jsonMapping','');
-        // die();
         try {
             $body = $request->getContent();
             $data = json_decode($body);
@@ -168,7 +167,7 @@ class adminConfigController extends AbstractController
                 throw new Exception('Invalid request body');
 
 
-            $oldMap = (array) json_decode(((string) $this->systemConfigService->get('slox_product_sync.config.jsonMapping')));
+            $oldMap = $this->baseServer->getCategoryMappingArray();
 
             $categoryRepository = $this->container->get('category.repository');
             $catSystem = $categoryRepository->search(new Criteria([$data->our_cat_id]), Context::createDefaultContext())->first();
@@ -193,22 +192,28 @@ class adminConfigController extends AbstractController
 
             if (count($oldMap) > 0) {
                 $oldMap[count($oldMap)] = $newMapItem;
-                //var_dump($oldMap);
-                //var_dump(array_push($oldMap, $newMapItem));
-                //die();
-                $this->systemConfigService->set('slox_product_sync.config.jsonMapping', json_encode($oldMap));
+                $this->baseServer->setCategoryMappingArray($oldMap);
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Added!',
+                    'map' => json_encode($oldMap)
+                ], 200);
             } else {
-                $this->systemConfigService->set('slox_product_sync.config.jsonMapping', json_encode([$newMapItem]));
+                $this->baseServer->setCategoryMappingArray([$newMapItem]);
+
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Added!',
+                    'map' => json_encode([$newMapItem])
+                ], 200);
+
             }
 
-            return new JsonResponse([
-                'success' => true,
-                'message' => 'Added!'
-            ], 200);
         } catch (Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'map' => ''
             ], 200);
         }
     }
@@ -228,7 +233,7 @@ class adminConfigController extends AbstractController
             if (!isset($data->bdropy_cat_value))
                 throw new Exception('Invalid request body');
 
-            $oldMap = (array) json_decode(((string) $this->systemConfigService->get('slox_product_sync.config.jsonMapping')));
+            $oldMap = $this->baseServer->getCategoryMappingArray();
 
             if (count($oldMap) > 0) {
 
@@ -238,18 +243,26 @@ class adminConfigController extends AbstractController
                         $newMap[count($newMap)] = $item;
                     }
                 }
-
-                $this->systemConfigService->set('slox_product_sync.config.jsonMapping', json_encode($newMap));
+                $this->baseServer->setCategoryMappingArray($newMap);
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Deleted!',
+                    'map' => json_encode($newMap)
+                ], 200);
+            }else{
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'can not delete no element found in Map!',
+                    'map' => json_encode($oldMap)
+                ], 200);
             }
 
-            return new JsonResponse([
-                'success' => true,
-                'message' => 'Deleted!'
-            ], 200);
+           
         } catch (Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'map' => ''
             ], 200);
         }
     }
@@ -262,15 +275,17 @@ class adminConfigController extends AbstractController
     public function bdropy_deleteallmappings(Request $request): JsonResponse
     {
         try {
-            $this->systemConfigService->set('slox_product_sync.config.jsonMapping', '');
+            $this->baseServer->setCategoryMappingArray([]);
             return new JsonResponse([
                 'success' => true,
-                'message' => 'All Deleted!'
+                'message' => 'All Deleted!',
+                'map' => ''
             ], 200);
         } catch (Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'map' => ''
             ], 200);
         }
     }

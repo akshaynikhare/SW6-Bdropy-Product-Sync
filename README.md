@@ -1,5 +1,18 @@
 # Shopware 6 Plugins - slox_product_sync
 
+### Screenshot
+<p align="left">
+  <img src="preview/prw1.jpg" width="410">
+  <img src="preview/prw2.jpg" width="410">
+  <img src="preview/prw3.jpg" width="410">
+  <img src="preview/prw4.jpg" width="410">
+  <img src="preview/prw5.jpg" width="410">
+  <img src="preview/prw6.jpg" width="410">
+  <img src="preview/prw7.jpg" width="410">
+  <img src="preview/prw8.jpg" width="410">
+  <img src="preview/prw9.jpg" width="410">
+</p>
+
 ### PreRequisite
     1. FTP credentials 
 

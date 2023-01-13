@@ -224,12 +224,12 @@ class JbsloxfullBase extends AbstractController
         }
     }
 
-    public function deleteOldProduct($allbdropyArticleCodeArray): void
+    public function deleteOldProductReferingBDroppy($allbdropyArticleCodeArray): void
     {
 
         /** @var EntityRepository $productRepository */
         $productRepository = $this->container->get('product.repository');
-        $allDBProducts = $this->getAllProduct();
+        $allDBProducts = $this->getProducts();
         //find/delete product not in bropy cataloge   
         foreach ($allDBProducts as $dBProduct) {;
             if (array_search($dBProduct->getProductNumber(), $allbdropyArticleCodeArray, true) <= 0 && !$dBProduct->getParentId()) {
@@ -244,21 +244,21 @@ class JbsloxfullBase extends AbstractController
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public function deleteAllBDroppyProducts(): void
+    {
+        /** @var EntityRepository $productRepository */
+        $productRepository = $this->container->get('product.repository');
+        $allDB_BdroppyProducts = $this->getProducts(true);
+        //find/delete product not in bropy cataloge   
+        foreach ($allDB_BdroppyProducts as $dBProduct) {
+                $this->createLog("Deleting --- " . $dBProduct->getProductNumber());
+                $productRepository->delete([
+                    [
+                        'id' => $dBProduct->getId(),
+                    ],
+                ], $this->createContextWithRules());
+        }
+    }
 
 
 
@@ -368,14 +368,22 @@ class JbsloxfullBase extends AbstractController
      * @param $productNumber
      * @return ProductEntity
      */
-    public function getAllProduct()
+    public function getProducts($onlyBdropy=false)
     {
         /** @var EntityRepository $productRepository */
         $productRepository = $this->container->get('product.repository');
 
+        $criteria = new Criteria();
+        $criteria->addAssociation('sloxBDropyProduct');
+        //$criteria->addFilter(new EqualsFilter('sloxBDropyProduct.id', null));
+
+        $criteria->addFilter(new NotFilter(NotFilter::CONNECTION_AND, [
+            new EqualsFilter('sloxBDropyProduct.id', null),
+        ]));
+        
         /** @var EntitySearchResult $entities */
         $entities = $productRepository->search(
-            new Criteria(),
+           $criteria ,
             $this->createContextWithRules()
         );
 
@@ -410,14 +418,15 @@ class JbsloxfullBase extends AbstractController
 
 
         if ($product != null and $product instanceof ProductEntity) {
+            $randVal=1+((rand(3,47))/100);
             $payload = [
                 'id' => $product->getId(),
                 'active' => intval($model["availability"]) > 0 ? true : false,
                 'stock' => intval($model["availability"]),
                 'purchasePrices' => [[
                     'currencyId' => Defaults::CURRENCY,
-                    'gross' => floatval($model['bestTaxable']),
-                    'net' => floatval($model['bestTaxable'] / 1.19),
+                    'gross' => floatval($model['bestTaxable']*1.19),
+                    'net' => floatval($model['bestTaxable']),
                     'linked' => true,
                 ]],
                 'price' => [[
@@ -425,7 +434,20 @@ class JbsloxfullBase extends AbstractController
                     'gross' => floatval($model['sellPrice']),
                     'linked' => true,
                     'currencyId' => Defaults::CURRENCY,
-                ]],
+                    'listPrice' => [
+                        'net' => floatval(($model['sellPrice']/1.19)*$randVal),
+                        'gross' => floatval(($model['sellPrice'])*$randVal),
+                        'linked' => true,
+                        'currencyId' => Defaults::CURRENCY,
+                    ],
+                ]],        
+                'extensions'    => [
+                    'sloxBDropyProduct' => [
+                        'id' => $product->getExtension('sloxBDropyProduct')->getId(),
+                        'update_json'  => ["Varient"=>true,"model"=>$model],
+                        'lastUpdated' => new \DateTime(),
+                    ],
+                ],
             ];
 
             return $payload;
@@ -433,7 +455,6 @@ class JbsloxfullBase extends AbstractController
 
         return null;
     }
-
 
 
     /**
@@ -466,7 +487,7 @@ class JbsloxfullBase extends AbstractController
                     $line_descriptions = rtrim($line_descriptions, ',');
                 }
             }
-
+            $randVal=1+((rand(3,47))/100);
             $payload = [
                 [
                     'id' => $productId,
@@ -477,56 +498,35 @@ class JbsloxfullBase extends AbstractController
                     'weight' => $line['weight'],
                     'purchasePrices' => [[
                         'currencyId' => Defaults::CURRENCY,
-                        'gross' => floatval($line['bestTaxable']),
-                        'net' => floatval($line['bestTaxable'] / 1.19),
+                        'gross' => floatval($line['bestTaxable']*1.19),
+                        'net' => floatval($line['bestTaxable']),
                         'linked' => true,
                     ]],
                     'price' => [[
                         'net' => floatval($line['sellPrice'] / 1.19),
                         'gross' => floatval($line['sellPrice']),
                         'linked' => true,
-                        'currencyId' => Defaults::CURRENCY,
+                        'currencyId' => Defaults::CURRENCY,                    
+                        'listPrice' => [
+                            'net' => floatval(($line['sellPrice']/1.19)*$randVal),
+                            'gross' => floatval(($line['sellPrice'])*$randVal),
+                            'linked' => true,
+                            'currencyId' => Defaults::CURRENCY,
+                        ],
                     ]],
                     'deliveryTime' => $this->getdeliveryTimePayload(),
+                    'extensions'    => [
+                        'sloxBDropyProduct' => [
+                            'id' => $product->getExtension('sloxBDropyProduct')->getId(),
+                            'updateJson'  => $line,
+                            'lastUpdated' => new \DateTime(),
+                        ],
+                    ],
                 ],
             ];
         }
 
         return $payload;
-    }
-
-
-
-    public function getMediaId($mediaUrl)
-    {
-
-        $mediaPath = pathinfo($mediaUrl);
-
-        if ($mediaPath) {
-            $mediaName = $mediaPath['filename'];
-            //$mediaName = trim($mediaName, '\t\n\r\0\x0B\??');
-            $mediaName = str_replace(".", "", str_replace("%", "", str_replace("%20", "", $mediaName)));
-        }
-        if ($mediaName) {
-            /** @var EntityRepository $mediaRepository */
-            $mediaRepository = $this->container->get('media.repository');
-            $criteria = (new Criteria())->addFilter(new EqualsFilter('fileName', $mediaName));
-
-            /** @var EntitySearchResult $entities */
-            $entities = $mediaRepository->search(
-                $criteria,
-                $this->createContextWithRules()
-            );
-
-            /** @var MediaEntity $media */
-            $media = $entities->getEntities()->first();
-
-            if ($media instanceof MediaEntity) {
-                return $media->getId();
-            }
-        }
-
-        return null;
     }
 
     public function getProductInsertPayload($line, $product = null): array
@@ -559,6 +559,7 @@ class JbsloxfullBase extends AbstractController
                 $line_descriptions = rtrim($line_descriptions, ',');
             }
         }
+        $randVal=1+((rand(3,47))/100);
         $payload = [
             [
                 'id' => $productId,
@@ -569,11 +570,11 @@ class JbsloxfullBase extends AbstractController
                 'purchaseUnit' => 1.0,
                 'referenceUnit' => 1.0,
                 'shippingFree' => false,
-                'purchasePrices' => [[
+                'purchasePrices' => [[   
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => floatval($line['bestTaxable']*1.19),
                     'net' => floatval($line['bestTaxable']),
-                    'gross' => floatval($line['bestTaxable'] * 1.19),
-                    'linked' => true,
-                    'currencyId' => Defaults::CURRENCY
+                    'linked' => true
                 ]],
                 'price' => [[
                     'net' => floatval($line['sellPrice']),
@@ -581,11 +582,12 @@ class JbsloxfullBase extends AbstractController
                     'linked' => true,
                     'currencyId' => Defaults::CURRENCY,
                     'listPrice' => [
-                        'net' => floatval($line['suggestedPrice']),
-                        'gross' => floatval($line['suggestedPrice'] * 1.19),
+                        'net' => floatval(($line['bestTaxable']/1.19)*$randVal),
+                        'gross' => floatval(($line['sellPrice'])*$randVal),
                         'linked' => true,
                         'currencyId' => Defaults::CURRENCY,
                     ],
+                    
                 ]],
 
                 'weight' => $line['weight'],
@@ -602,17 +604,19 @@ class JbsloxfullBase extends AbstractController
                     ["id" => $this->getMappedCatogerId($line["attributes"])]
                 ],
                 'deliveryTime' => $this->getdeliveryTimePayload(),
-                //'properties' => $this->getPropertiesPayloads($line),
-                //'maxPurchase' => 5,
-
+                'extensions'    => [
+                    'sloxBDropyProduct' => [
+                        'id'           => Uuid::randomHex(),
+                        'importJson'  => $line,
+                        'importedOn'  => new \DateTime(),
+                        'lastUpdated' => new \DateTime(),
+                    ],
+                ],
             ],
         ];
 
 
-        
-        //var_dump($payload);
-        //die();
-
+    
         if ($product == null) {
             $productMediaID = Uuid::randomHex();
             $payload[0]["media"] = $this->getMediaPayload($line, $productMediaID);
@@ -667,7 +671,77 @@ class JbsloxfullBase extends AbstractController
     }
 
 
+    public function getProuctClildPayload($productCode, $model)
+    {
+        $groupId = $this->getorGenratePropertyGroupByName('model');
+        $randVal=1+((rand(3,47))/100);
+        $payload = [
+            "productNumber" => "" . $productCode . "",
+            "stock" => $model["availability"],
+            'purchasePrices' => [[
+                        'currencyId' => Defaults::CURRENCY,
+                        'gross' => floatval($model['bestTaxable']*1.19),
+                        'net' => floatval($model['bestTaxable']),
+                        'linked' => true,
+                    ]],
+            "price" => [[
+                'net' => floatval($model['sellPrice'] / 1.19),
+                'gross' => floatval($model['sellPrice']),
+                'linked' => false,
+                'currencyId' => Defaults::CURRENCY,
+                'listPrice' => [
+                    'net' => floatval(($model['sellPrice']/1.19)*$randVal),
+                    'gross' => floatval(($model['sellPrice'])*$randVal),
+                    'linked' => true,
+                    'currencyId' => Defaults::CURRENCY,
+                ],
+            ]],
+            "options" => [
+                ["id" => Uuid::randomHex(), "groupId" => $groupId, "name" => $model["model"]]
+            ],                
+            'extensions'    => [
+                'sloxBDropyProduct' => [
+                    'id'           => Uuid::randomHex(),
+                    'importJson'  => ["Varient"=>true,"model"=>$model],
+                    'importedOn'  => new \DateTime(),
+                    'lastUpdated' => new \DateTime(),
+                ],
+            ],
+        ];
+        return $payload;
+    }
 
+    public function getMediaId($mediaUrl)
+    {
+
+        $mediaPath = pathinfo($mediaUrl);
+
+        if ($mediaPath) {
+            $mediaName = $mediaPath['filename'];
+            //$mediaName = trim($mediaName, '\t\n\r\0\x0B\??');
+            $mediaName = str_replace(".", "", str_replace("%", "", str_replace("%20", "", $mediaName)));
+        }
+        if ($mediaName) {
+            /** @var EntityRepository $mediaRepository */
+            $mediaRepository = $this->container->get('media.repository');
+            $criteria = (new Criteria())->addFilter(new EqualsFilter('fileName', $mediaName));
+
+            /** @var EntitySearchResult $entities */
+            $entities = $mediaRepository->search(
+                $criteria,
+                $this->createContextWithRules()
+            );
+
+            /** @var MediaEntity $media */
+            $media = $entities->getEntities()->first();
+
+            if ($media instanceof MediaEntity) {
+                return $media->getId();
+            }
+        }
+
+        return null;
+    }
 
 
 
@@ -675,10 +749,8 @@ class JbsloxfullBase extends AbstractController
 
     public function getMappedCatogerId($attributes)
     {
+        $catMap = $this->baseServer->getCategoryMappingArray();
 
-
-        
-        $catMap = (array) json_decode(((string) $this->systemConfigService->get('slox_product_sync.config.jsonMapping')));
 
         if (count($catMap) > 0) {
    
@@ -697,24 +769,6 @@ class JbsloxfullBase extends AbstractController
     }
 
 
-    public function getProuctClildPayload($productCode, $model)
-    {
-        $groupId = $this->getorGenratePropertyGroupByName('model');
-        $payload = [
-            "productNumber" => "" . $productCode . "",
-            "stock" => $model["availability"],
-            "price" => [[
-                'net' => floatval($model['sellPrice'] / 1.19),
-                'gross' => floatval($model['sellPrice']),
-                'linked' => false,
-                'currencyId' => Defaults::CURRENCY,
-            ]],
-            "options" => [
-                ["id" => Uuid::randomHex(), "groupId" => $groupId, "name" => $model["model"]]
-            ]
-        ];
-        return $payload;
-    }
     public function getAllOptionIDs($productChildrenArray)
     {
         $payload_0_configuratorSettings = [];

@@ -110,5 +110,16 @@
 		<!-- scheduled task -->
 
 
+        <!-- Entity Extensions -->
+        <service id="slox_product_sync\Core\Content\Product\ProductExtensionDefinition">
+            <tag name="shopware.entity.extension" />
+        </service>
+
+        <!-- Entities -->
+        <service id="slox_product_sync\Core\Content\Product\Aggregate\sloxBDropyProductDefinition">
+            <tag name="shopware.entity.definition" entity="slox_BDropy_Product_extension" />
+        </service>
+
+
 	</services>
 </container>

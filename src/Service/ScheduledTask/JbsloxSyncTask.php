@@ -13,7 +13,6 @@ class JbsloxSyncTask extends ScheduledTask
 
     public static function getDefaultInterval(): int
     {
-        return (10*60*60); //in second // 10*60*60 = 10 hour 
-
+        return (5*60*60); //in second // 5*60*60 = 5 hour 
     }
 }

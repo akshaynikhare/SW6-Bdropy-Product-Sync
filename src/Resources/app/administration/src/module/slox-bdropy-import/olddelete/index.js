@@ -92,6 +92,18 @@ Component.register('slox-bdropy-import-olddelete', {
             }
             let response = await this.AdminControlService.olddelete();
         },
+        async onDeleteAll() {
+            clearInterval(this._timeout);
+            if (!this.isRunning) {
+                this.islastUpdateCounter = 0;
+                this._timeout = setTimeout(this.onSubmitStatus, 2000);
+                this.isLoading = true;
+                this.isRunning = true;
+            }
+            let response = await this.AdminControlService.olddeleteAll();
+        },
+
+        
     },
 
     async mounted() {

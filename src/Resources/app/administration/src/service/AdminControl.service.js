@@ -72,6 +72,20 @@ class AdminConfigService extends ApiService {
         });
     }
 
+    async olddeleteAll() {
+        const apiRoute = `${this.getApiBasePath()}/olddeleteall`;
+
+        return await this.httpClient.get(
+            apiRoute,
+            {
+                headers: this.getBasicHeaders()
+            }
+        ).then((response) => {
+            return ApiService.handleResponse(response);
+        });
+    }
+    
+
     async olddeleteStatus() {
         const apiRoute = `${this.getApiBasePath()}/olddelete_status`;
 

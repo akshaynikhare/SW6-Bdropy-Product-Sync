@@ -4,6 +4,7 @@ namespace slox_product_sync\Controller\bdroppy;
 
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use slox_product_sync\Util\DebugLog;
+use Symfony\Component\Config\Exception\FileLocatorFileNotFoundException;
 
 class BaseServer
 {
@@ -21,6 +22,12 @@ class BaseServer
      * @var DebugLog
      */
     private $debugLog;
+
+    
+    /**
+     * @var String
+     */
+    public $catMapJson;
 
     public function __construct(
         SystemConfigService $systemConfigService,
@@ -41,6 +48,8 @@ class BaseServer
             //TODO: add precaustionarry code
             $this->getNewToken($this->systemConfigService->get('slox_product_sync.config.user'),$this->systemConfigService->get('slox_product_sync.config.password'));
         }
+
+        $this->catMapJson = (__DIR__ . '/categoryMap.json');
     }
 
     protected function post($url, $dataArray ,$useBearerToken = true)
@@ -107,6 +116,27 @@ class BaseServer
     }
 
 
+    
+
+    public function getCategoryMappingArray() 
+    {
+        try {
+            if (file_exists($this->catMapJson )) {
+                $catMap = (array) json_decode((string) file_get_contents( $this->catMapJson ));
+                return $catMap;
+            }else{
+                return[];
+            }
+        } catch (FileLocatorFileNotFoundException $exception) {
+            return [];
+        }
+    }
+
+    public function setCategoryMappingArray($arr) 
+    {
+        return file_put_contents($this->catMapJson, json_encode( (array) $arr));
+    }
+
     public function getNewToken($email, $password)
     {
         $result = $this->post("auth/login", array(
@@ -147,7 +177,7 @@ class BaseServer
             if(is_array($result["result"]["items"]) &&  count($result["result"]["items"])>0 ){
                        //return $result["result"]["items"];
 
-                       return array_slice($result["result"]["items"],count($result["result"]["items"])-20);
+                       return array_slice($result["result"]["items"],count($result["result"]["items"])-10);
             }
         }
         return null;
@@ -179,7 +209,7 @@ class BaseServer
             
             if($SubCategories){
                 foreach ($SubCategories as $SubCategorie){
-                    $longCategoriesList[$SubCategorie["id"]] = [
+                    $longCategoriesList[count($longCategoriesList).$SubCategorie["id"]] = [
                         'value'=>$Categorie["code"]."_".$SubCategorie["code"],
                         'label'=>$Categorie["code"]." > ".$SubCategorie["code"],
                         'code'=>$SubCategorie["code"],

@@ -1,5 +1,6 @@
 
 import './slox-bdropy-import';
+import './sw-product';
 
 const { Module } = Shopware;
 
