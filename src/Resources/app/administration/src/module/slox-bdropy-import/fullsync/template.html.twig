@@ -26,8 +26,11 @@
                                                 {{ $t('slox-bdropy-import.tab.current-status-label') }}
                                         </strong>
                                         <br/>
-                                        <div v-if="isRunning">
+                                        <div v-if="'isRunning' === 'TRUE'">
                                                 {{ $t('slox-bdropy-import.tab.current-status-runing') }}
+                                        </div>
+                                        <div v-else="'isRunning' === 'PENDING'">
+                                                {{ $t('slox-bdropy-import.tab.current-status-pending') }}
                                         </div>
                                         <div v-else>
                                                 {{ $t('slox-bdropy-import.tab.current-status-stopped') }}

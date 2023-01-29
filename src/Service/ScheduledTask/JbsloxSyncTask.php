@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace slox_product_sync\Service\ScheduledTask;
 
@@ -13,6 +15,6 @@ class JbsloxSyncTask extends ScheduledTask
 
     public static function getDefaultInterval(): int
     {
-        return (5*60*60); //in second // 5*60*60 = 5 hour 
+        return (5 * 60 * 60); //in second // 5*60*60 = 5 hour 
     }
 }

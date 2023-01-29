@@ -10,6 +10,7 @@
             "current-status-label":"Current Status:",
             "current-status-runing":"Running",
             "current-status-stopped":"Stopped",
+            "current-status-pending":"Pending",
             "output-log-label":"Output Log"
 
         },

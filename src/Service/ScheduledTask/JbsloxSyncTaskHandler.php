@@ -13,6 +13,8 @@ use slox_product_sync\_JbImport\Jbsloxfullsync;
 use slox_product_sync\_JbImport\Jbsloxnewsync;
 use slox_product_sync\_JbImport\Jbsloxolddelete;
 use slox_product_sync\_JbImport\Jbsloxproductupdate;
+use Doctrine\DBAL\Connection;
+use Exception;
 
 class JbsloxSyncTaskHandler extends ScheduledTaskHandler
 {
@@ -42,11 +44,11 @@ class JbsloxSyncTaskHandler extends ScheduledTaskHandler
      */
     private $jbsloxproductupdate;
 
-
     /**
-     * @var String
+     * @var Connection
      */
-    private $logFileName;
+    public $connection;
+
     /**
      * Constructor
      *
@@ -57,7 +59,8 @@ class JbsloxSyncTaskHandler extends ScheduledTaskHandler
         Jbsloxfullsync $jbsloxfullsync,
         Jbsloxnewsync $jbsloxnewsync,
         Jbsloxolddelete $jbsloxolddelete,
-        Jbsloxproductupdate $jbsloxproductupdate
+        Jbsloxproductupdate $jbsloxproductupdate,
+        Connection $connection
     ) {
         parent::__construct($scheduledTaskRepository);
         $this->systemConfigService = $systemConfigService;
@@ -65,7 +68,7 @@ class JbsloxSyncTaskHandler extends ScheduledTaskHandler
         $this->jbsloxnewsync = $jbsloxnewsync;
         $this->jbsloxolddelete = $jbsloxolddelete;
         $this->jbsloxproductupdate = $jbsloxproductupdate;
-        $this->logFileName = (__DIR__ . "/_log_jbsloxSyncTask.log");
+        $this->connection = $connection;
     }
 
 
@@ -76,38 +79,36 @@ class JbsloxSyncTaskHandler extends ScheduledTaskHandler
 
     public function run(): void
     {
-        $this->createLog("****************************   Corn Starting : Stock Sync  ***********************************");
+        $this->createLog(">>>> SyncMainTask Starting...");
         $time_start = microtime(true);
         try {
 
             if ((bool) $this->systemConfigService->get('slox_product_sync.config.cornTaskActive')) {
                 $response = '';
-                switch((string) $this->systemConfigService->get('slox_product_sync.config.cornSyncMethod')){
-                    case 'fullsync' :
-                        $response = $this->jbsloxfullsync->startTask("CornTask");
+                switch ((string) $this->systemConfigService->get('slox_product_sync.config.cornSyncMethod')) {
+                    case 'fullsync':
+                        $response = $this->jbsloxfullsync->startTask("SyncMainTask");
                         break;
-                    case 'newsync' :
-                        $response = $this->jbsloxnewsync->startTask("CornTask");
-                    break;
-                    case 'olddelete' :
-                        $response = $this->jbsloxolddelete->startTask("CornTask");
-                    break;
-                    case 'productupdate' :
-                        $response = $this->jbsloxproductupdate->startTask("CornTask");
-                    break;
+                    case 'newsync':
+                        $response = $this->jbsloxnewsync->startTask("SyncMainTask");
+                        break;
+                    case 'olddelete':
+                        $response = $this->jbsloxolddelete->startTask("SyncMainTask");
+                        break;
+                    case 'productupdate':
+                        $response = $this->jbsloxproductupdate->startTask("SyncMainTask");
+                        break;
                     default:
                         $this->createLog("Type of Sync to Run Automatically Not defined in Setting.");
                 }
-                $this->createLog("\n" . $response);
-            }else{
+            } else {
                 $this->createLog("Disabled from Setting.");
+                $this->createLog(">>>>  SyncMainTask Finished in " . $this->secondsToTime(microtime(true) - $time_start));
             }
-
         } catch (Exception $e) {
-            $this->createLog("Error in Corn Job.  Exception :" . $e->getMessage());
+            $this->createLog(">>>>  SyncMainTask  Exiting!!  Error:" . $e->getMessage());
+            $this->createLog(">>>>  SyncMainTask Finished in " . $this->secondsToTime(microtime(true) - $time_start));
         }
-
-        $this->createLog("****************************   Corn Finished in " . $this->secondsToTime(microtime(true) - $time_start) . " ***********************************");
     }
 
     /**
@@ -115,16 +116,17 @@ class JbsloxSyncTaskHandler extends ScheduledTaskHandler
      */
     public function createLog($message)
     {
-        file_put_contents($this->logFileName, "[ " . date("Y-m-d H:i:s") . " ]:" . $message . " \r\n", FILE_APPEND);
+        return $this->connection->executeStatement(
+            "INSERT INTO `slox_BDropy_Sync_Log` (`task_id` ,`task_type`, `date_time`, `log`) VALUES ('Jbslox','CornTask', now(), '" . $message . "')"
+        );
     }
 
 
     public function secondsToTime($seconds_time)
     {
-            $hours = floor($seconds_time / 3600);
-            $minutes = floor(($seconds_time - $hours * 3600) / 60);
-            $seconds = floor($seconds_time - ($hours * 3600) - ($minutes * 60));
-            return "$hours h  : $minutes m  : $seconds S";
-
+        $hours = floor($seconds_time / 3600);
+        $minutes = floor(($seconds_time - $hours * 3600) / 60);
+        $seconds = floor($seconds_time - ($hours * 3600) - ($minutes * 60));
+        return "$hours h  : $minutes m  : $seconds S";
     }
 }

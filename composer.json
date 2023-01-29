@@ -1,7 +1,7 @@
 {
     "name": "cadnative/slox_product_sync",
     "description": "developed by Akshay Nikhare",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "type": "shopware-platform-plugin",
     "license": "MIT",
     "autoload": {

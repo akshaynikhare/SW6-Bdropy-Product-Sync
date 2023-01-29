@@ -49,64 +49,74 @@ class Jbsloxproductupdate extends JbsloxfullBase
         SystemConfigService $systemConfigService
     ) {
 
-        parent::setLogFiles("/_log_run_Jbsloxfullsync.log", "/_log_Jbsloxproductupdate.log");
+        parent::setLogName("Jbsloxproductupdate");
         parent::init($container, $saleschannelRepository, $mediaService, $fileSaver, $connection, $baseServer, $systemConfigService);
     }
 
 
-    public function taskStatus(): JsonResponse
-    {
-
-        if (!($this->CheckCanWeStartImport())) {
-            return new JsonResponse([
-                'isRunning' => true,
-                'lastRun' =>  parent::getFileContents($this->runLogJsonFile),
-                'log' =>  parent::getFileContents($this->logFileName)
-            ], 200);
-        }
-
-        return new JsonResponse([
-            'isRunning' => false,
-            'lastRun' =>  parent::getFileContents($this->runLogJsonFile),
-            'log' =>  parent::getFileContents($this->logFileName)
-        ], 200);
-    }
 
     public function startTask($whoStarted = null)
     {
-        $this->lastlog = '';
+        $this->setIniConfig();
+        $key = Uuid::randomHex();
+        $this->setLogKey($key);
+        $this->SetStartTime();
 
         if (!($this->CheckCanWeStartImport())) {
             return 'one of the import is still in progress';
         }
 
-        if (!($this->CleanLastLog())) {
-            return 'Can not clearn last log';
-        }
+
 
         if ($whoStarted) {
             $this->createLog(" Process Started by > " . $whoStarted);
         }
 
-       $this->WiteWeStartedImport();
-        $this->createLog("------------------------------------------Import Started------------------------------------------");
-
+        $this->WiteWeStartedImport();
         try {
             $this->checkConfig();
-            $this->importProductsFromBdroppy("articles");
+
+            //check for old pending runs
+
+            $count =  $this->GetOldSyncStatusCount();
+            if ($count > 0) {
+                $this->createLog("-----------------------------------------old Sync yet to complete .... resuming------------------------------------------");
+                $oldkey = $this->connection->fetchOne("SELECT HEX(`id`)  FROM `slox_BDropy_Sync_Status` where `pending_json` IS NOT NULL   and `task_type`='$this->logKeyName' ORDER BY `updated_at`;");
+                $this->setLogKey($oldkey);
+                $this->createProductNext($oldkey);
+            } else {
+                if (!($this->CleanLastLog())) {
+                    return 'Can not clearn last log';
+                }
+                $this->createLog("------------------------------------------Import Started------------------------------------------");
+
+                $ArticleList = $this->importProductsFromBdroppy();
+
+                $this->createLog("item to be imported : " . count($ArticleList));
+
+
+
+
+                $this->connection->executeStatement(
+                    "INSERT INTO `slox_BDropy_Sync_Status` (`id`, `task_type`, `started_by`, `pending_json`, `updated_at`, `created_at`)
+                    VALUES (UNHEX('$key'), '$this->logKeyName', '$whoStarted', '" . base64_encode(json_encode($ArticleList)) . "', now(), now());"
+                );
+                $this->deleteProductNext($ArticleList);
+                $this->createProductNext($key);
+            }
         } catch (Exception $e) {
             $this->createLog("Exiting!! Error:" . $e->getMessage());
         }
         $this->WiteWeStopedImport();
-        $this->createLog("------------------------------------------Import Ended------------------------------------------");
 
-        return $this->lastlog;
+
+        return $this->getLastLog();
     }
 
 
-    public function importProductsFromBdroppy($importKey)
+    public function importProductsFromBdroppy()
     {
-        $this->setIniConfig();
+
         $catalogName = $this->systemConfigService->get('slox_product_sync.config.userCatalogName');
         $catalogID = $this->baseServer->getUserCatalogIdByName($catalogName);
         if ($catalogID == null) {
@@ -118,26 +128,88 @@ class Jbsloxproductupdate extends JbsloxfullBase
         $ArticleList = $this->baseServer->getArticeArrayByCatalogId($catalogID);
 
         if ($ArticleList == null || !is_array($ArticleList) || count($ArticleList) < 1) {
-            $this->createLog("No Article found in catalog -> " . $catalogName);
+            $this->createLog("No Article found in Bdroppy catalog -> " . $catalogName);
             return;
         } else {
-            $this->createLog("Article Count found in catalog >" . count($ArticleList));
+            $this->createLog("Article Count found in Bdroppy catalog >" . count($ArticleList));
         }
 
-        if ($importKey == "articles") {
-            $this->updateProducts($ArticleList);
+
+        $allDB_BdroppyProducts = $this->getProducts();
+
+
+        $allDB_BdroppyProductsIds = [];
+        foreach ($allDB_BdroppyProducts as $products) {
+            if (!$products->getParentId()) {
+                array_push($allDB_BdroppyProductsIds, $products->getProductNumber());
+            }
+        }
+
+        $ArticleListFiltred = [];
+        foreach ($ArticleList as $item) {
+            if (array_search($item['code'], $allDB_BdroppyProductsIds, true) > -1) {
+                array_push($ArticleListFiltred, $item);
+            }
+        }
+
+        $this->createLog("Artical to update count >" . count($ArticleListFiltred));
+
+
+        return $ArticleListFiltred;
+    }
+
+
+    private function createProductNext($key)
+    {
+
+        $ArticleList = $this->connection->fetchOne("SELECT pending_json FROM `slox_BDropy_Sync_Status` where `id`=UNHEX('$key')");
+        if ($ArticleList) {
+            $ArticleList = array_values(json_decode(base64_decode($ArticleList), true));
+            $index = 0;
+            foreach ($ArticleList as $k => $line) {
+                $this->createAndUpdateProduct(
+                    $line,
+                    false,
+                    true
+                );
+
+                $index++;
+
+                if ($index >= count($ArticleList)) {
+                    $this->connection->executeStatement(
+                        "UPDATE `slox_BDropy_Sync_Status` SET
+                        `pending_json`= NULL,
+                        `updated_at` =  now()
+                         WHERE `id` = UNHEX('$key');"
+                    );
+                    $this->createLog("------------------------------------------Import Ended------------------------------------------");
+                } else {
+                    $this->connection->executeStatement(
+                        "UPDATE `slox_BDropy_Sync_Status` SET
+                        `pending_json`='" . base64_encode(json_encode(array_slice($ArticleList, $index))) . "',
+                        `updated_at` =  now()
+                         WHERE `id` = UNHEX('$key');"
+                    );
+                }
+            }
         }
     }
 
-    private function updateProducts($ArticleList)
+
+    private function deleteProductNext($ArticleList)
     {
-        $this->createLog("item to be imported : " . count($ArticleList));
+        $this->createLog("Deleting old Articles....");
+        $allbdropyArticleCodeArray = [];
         foreach ($ArticleList as $line) {
-            $this->createAndUpdateProduct(
-                $line,
-                false,
-                true
-            );
+            array_push($allbdropyArticleCodeArray, $line['code']);
+        }
+
+        $allDBProducts = $this->getProducts();
+        //find/delete product not in bropy cataloge   
+        foreach ($allDBProducts as $dBProduct) {
+            if (array_search($dBProduct->getProductNumber(), $allbdropyArticleCodeArray, true) < 0 && !$dBProduct->getParentId()) {
+                $this->deleteOldProductReferingBDroppy($dBProduct);
+            }
         }
     }
 }

@@ -10,6 +10,7 @@
             "current-status-label":"Current Status:",
             "current-status-runing":"Running",
             "current-status-stopped":"Stopped",
+            "current-status-pending":"Pending",
             "output-log-label":"Output Log"
 
         },
@@ -23,7 +24,9 @@
         },
         "olddelete":{
             "longtext":"Delete old Product : this will delete old product that are not in Bdropy Catalogue but are still in this website.",
-            "start-buttton-label":"Delete Old Product not is Bdropy Catalogue"
+            "start-buttton-label":"Delete Old Product not is Bdropy Catalogue",
+            "deleteAlltext":"To delete all Product From Bdroppy !! Click Below",
+            "deleteAll-buttton-label":"Delete All Product From Bdropy"
         },
         "productupdate":{
             "longtext":"Update Product : this will update existing product from the website which matches in Bdropy Catalogue.",

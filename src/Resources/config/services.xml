@@ -105,6 +105,21 @@
 			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxnewsync" />
 			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxolddelete" />
 			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxproductupdate" />
+			<argument type="service" id="Doctrine\DBAL\Connection" />
+			<tag name="messenger.message_handler" />
+		</service>
+
+		<service id="slox_product_sync\Service\ScheduledTask\JbsloxSyncPendingTask">
+			<tag name="shopware.scheduled.task" />
+		</service>
+		<service id="slox_product_sync\Service\ScheduledTask\JbsloxSyncPendingTaskHandler">
+			<argument type="service" id="scheduled_task.repository" />
+			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxfullsync" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxnewsync" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxolddelete" />
+			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxproductupdate" />
+			<argument type="service" id="Doctrine\DBAL\Connection" />
 			<tag name="messenger.message_handler" />
 		</service>
 		<!-- scheduled task -->

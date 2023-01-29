@@ -129,7 +129,7 @@ class adminConfigController extends AbstractController
             ], 200);
         }
     }
-    
+
 
     /**
      * @RouteScope(scopes={"api"})
@@ -174,19 +174,19 @@ class adminConfigController extends AbstractController
             $breadCrumbs = $catSystem->getBreadcrumb();
             $catName = '';
             foreach ($breadCrumbs as $breadCrumb) {
-                $catName .= $breadCrumb.' > ';
+                $catName .= $breadCrumb . ' > ';
             }
-            
+
             $newMapItem = [
                 'BdropyCat' => [
-                    'value'=>$data->sel_bdropy_cat->value,
-                    'label'=>$data->sel_bdropy_cat->label,
-                    'code'=>$data->sel_bdropy_cat->code,
-                    'parent_code'=>$data->sel_bdropy_cat->parent_code,
+                    'value' => $data->sel_bdropy_cat->value,
+                    'label' => $data->sel_bdropy_cat->label,
+                    'code' => $data->sel_bdropy_cat->code,
+                    'parent_code' => $data->sel_bdropy_cat->parent_code,
                 ],
                 'ourCat' => [
                     'id' => $data->our_cat_id,
-                    'label' => rtrim($catName,' > ')
+                    'label' => rtrim($catName, ' > ')
                 ]
             ];
 
@@ -206,9 +206,7 @@ class adminConfigController extends AbstractController
                     'message' => 'Added!',
                     'map' => json_encode([$newMapItem])
                 ], 200);
-
             }
-
         } catch (Exception $e) {
             return new JsonResponse([
                 'success' => false,
@@ -249,15 +247,13 @@ class adminConfigController extends AbstractController
                     'message' => 'Deleted!',
                     'map' => json_encode($newMap)
                 ], 200);
-            }else{
+            } else {
                 return new JsonResponse([
                     'success' => true,
                     'message' => 'can not delete no element found in Map!',
                     'map' => json_encode($oldMap)
                 ], 200);
             }
-
-           
         } catch (Exception $e) {
             return new JsonResponse([
                 'success' => false,

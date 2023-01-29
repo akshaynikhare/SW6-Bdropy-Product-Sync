@@ -48,33 +48,17 @@ class Jbsloxolddelete extends JbsloxfullBase
         BaseServer $baseServer,
         SystemConfigService $systemConfigService
     ) {
-
-        parent::setLogFiles("/_log_Run_Jbsloxolddelete.log", "/_log_Jbsloxolddelete.log");
+        parent::setLogName("Jbsloxolddelete");
         parent::init($container, $saleschannelRepository, $mediaService, $fileSaver, $connection, $baseServer, $systemConfigService);
     }
 
 
-    public function taskStatus(): JsonResponse
+    public function startTask($whoStarted = null, $specialTaskString = null)
     {
-
-        if (!($this->CheckCanWeStartImport())) {
-            return new JsonResponse([
-                'isRunning' => true,
-                'lastRun' =>  parent::getFileContents($this->runLogJsonFile),
-                'log' =>  parent::getFileContents($this->logFileName)
-            ], 200);
-        }
-
-        return new JsonResponse([
-            'isRunning' => false,
-            'lastRun' =>  parent::getFileContents($this->runLogJsonFile),
-            'log' =>  parent::getFileContents($this->logFileName)
-        ], 200);
-    }
-
-    public function startTask($whoStarted = null,$specialTaskString=null)
-    {
-        $this->lastlog = '';
+        $this->setIniConfig();
+        $key = Uuid::randomHex();
+        $this->setLogKey($key);
+        $this->SetStartTime();
 
         if (!($this->CheckCanWeStartImport())) {
             return 'one of the import is still in progress';
@@ -93,25 +77,24 @@ class Jbsloxolddelete extends JbsloxfullBase
 
         try {
             $this->checkConfig();
-            if($specialTaskString==="DeleteAll"){
+            if ($specialTaskString === "DeleteAll") {
                 $this->deleteAllProducts();
-            }else{
+            } else {
                 $this->importProductsFromBdroppy("articles");
             }
-            
         } catch (Exception $e) {
             $this->createLog("Exiting!! Error:" . $e->getMessage());
         }
         $this->WiteWeStopedImport();
         $this->createLog("------------------------------------------Import Ended------------------------------------------");
 
-        return $this->lastlog;
+        return $this->getLastLog();
     }
 
 
     public function importProductsFromBdroppy($importKey)
     {
-        $this->setIniConfig();
+
         $catalogName = $this->systemConfigService->get('slox_product_sync.config.userCatalogName');
         $catalogID = $this->baseServer->getUserCatalogIdByName($catalogName);
         if ($catalogID == null) {
@@ -123,10 +106,10 @@ class Jbsloxolddelete extends JbsloxfullBase
         $ArticleList = $this->baseServer->getArticeArrayByCatalogId($catalogID);
 
         if ($ArticleList == null || !is_array($ArticleList) || count($ArticleList) < 1) {
-            $this->createLog("No Article found in catalog -> " . $catalogName);
+            $this->createLog("No Article found in Bdroppy catalog -> " . $catalogName);
             return;
         } else {
-            $this->createLog("Article Count found in catalog >" . count($ArticleList));
+            $this->createLog("Article Count found in Bdroppy catalog >" . count($ArticleList));
         }
 
         if ($importKey == "articles") {
@@ -142,12 +125,18 @@ class Jbsloxolddelete extends JbsloxfullBase
         foreach ($ArticleList as $line) {
             array_push($allbdropyArticleCodeArray, $line['code']);
         }
-        $this->deleteOldProductReferingBDroppy($allbdropyArticleCodeArray);
+
+        $allDBProducts = $this->getProducts();
+        //find/delete product not in bropy cataloge   
+        foreach ($allDBProducts as $dBProduct) {
+            if (array_search($dBProduct->getProductNumber(), $allbdropyArticleCodeArray, true) < 0 && !$dBProduct->getParentId()) {
+                $this->deleteOldProductReferingBDroppy($dBProduct);
+            }
+        }
     }
 
     private function deleteAllProducts()
     {
-        $this->setIniConfig();
         $this->createLog("Deleting All Bdropy Articles....");
         $this->deleteAllBDroppyProducts();
     }

@@ -23,7 +23,7 @@ class BaseServer
      */
     private $debugLog;
 
-    
+
     /**
      * @var String
      */
@@ -44,41 +44,41 @@ class BaseServer
         $this->url = $this->mainUrl . $prefix;
         $this->BearerToken = $this->systemConfigService->get('slox_product_sync.config.BearerToken');
 
-        if(empty($this->BearerToken) or is_null($this->BearerToken)){
+        if (empty($this->BearerToken) or is_null($this->BearerToken)) {
             //TODO: add precaustionarry code
-            $this->getNewToken($this->systemConfigService->get('slox_product_sync.config.user'),$this->systemConfigService->get('slox_product_sync.config.password'));
+            $this->getNewToken($this->systemConfigService->get('slox_product_sync.config.user'), $this->systemConfigService->get('slox_product_sync.config.password'));
         }
 
         $this->catMapJson = (__DIR__ . '/categoryMap.json');
     }
 
-    protected function post($url, $dataArray ,$useBearerToken = true)
+    protected function post($url, $dataArray, $useBearerToken = true)
     {
-        if($useBearerToken){
-            return $this->get_data_by_posting($this->url . $url, $dataArray,array('authorization:Bearer ' .$this->BearerToken ));
+        if ($useBearerToken) {
+            return $this->get_data_by_posting($this->url . $url, $dataArray, array('authorization:Bearer ' . $this->BearerToken));
         }
         return $this->get_data_by_posting($this->url . $url, $dataArray);
     }
 
-    protected function get($url,$useBearerToken = true)
+    protected function get($url, $useBearerToken = true)
     {
-        if($useBearerToken){
-            return $this->get_data_by_getting($this->url . $url ,array('authorization:Bearer ' .$this->BearerToken ));
+        if ($useBearerToken) {
+            return $this->get_data_by_getting($this->url . $url, array('authorization:Bearer ' . $this->BearerToken));
         }
         return $this->get_data_by_getting($this->url . $url);
     }
 
-    static function get_data_by_posting(String $url, array $post_parameters ,array $post_header = null)
+    static function get_data_by_posting(String $url, array $post_parameters, array $post_header = null)
     {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode($post_parameters));
 
-        if($post_header){
+        if ($post_header) {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(['Content-Type' => 'application/json'], $post_header));
-        }else{
+        } else {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
         }
-        
+
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         $result = curl_exec($ch);
@@ -95,14 +95,14 @@ class BaseServer
     {
         $ch = curl_init($url);
 
-        if($post_header){
+        if ($post_header) {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(['Content-Type' => 'application/json'], $post_header));
-        }else{
+        } else {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
         }
-        
+
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); 
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
 
         $result = curl_exec($ch);
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -110,31 +110,31 @@ class BaseServer
         curl_close($ch);
 
         $result = (array) json_decode($result, true);
-        $result = array_merge(['HTTP_CODE' => $httpcode, 'result'=>$result]);
+        $result = array_merge(['HTTP_CODE' => $httpcode, 'result' => $result]);
 
         return $result;
     }
 
 
-    
 
-    public function getCategoryMappingArray() 
+
+    public function getCategoryMappingArray()
     {
         try {
-            if (file_exists($this->catMapJson )) {
-                $catMap = (array) json_decode((string) file_get_contents( $this->catMapJson ));
+            if (file_exists($this->catMapJson)) {
+                $catMap = (array) json_decode((string) file_get_contents($this->catMapJson));
                 return $catMap;
-            }else{
-                return[];
+            } else {
+                return [];
             }
         } catch (FileLocatorFileNotFoundException $exception) {
             return [];
         }
     }
 
-    public function setCategoryMappingArray($arr) 
+    public function setCategoryMappingArray($arr)
     {
-        return file_put_contents($this->catMapJson, json_encode( (array) $arr));
+        return file_put_contents($this->catMapJson, json_encode((array) $arr));
     }
 
     public function getNewToken($email, $password)
@@ -147,12 +147,12 @@ class BaseServer
         if ($result['HTTP_CODE'] == 200) {
             $this->debugLog->sendLog('Bdroppy change token bdroppy token refresh is successful !');
 
-            $this->systemConfigService->set('slox_product_sync.config.BearerToken',$result['token']);
+            $this->systemConfigService->set('slox_product_sync.config.BearerToken', $result['token']);
             $this->BearerToken = $result['token'];
             return array("api-token" => $result['token'], "api-token-for-user" => $result['email']);
         } else {
-          $this->debugLog->sendLog('Bdroppy change token bdroppy token refresh isn\'t successful ! -- response status : ' . $result['code']);
-          return array("error" => $result['HTTP_CODE'] , "message" => $result['code']);
+            $this->debugLog->sendLog('Bdroppy change token bdroppy token refresh isn\'t successful ! -- response status : ' . $result['code']);
+            return array("error" => $result['HTTP_CODE'], "message" => $result['code']);
         }
     }
 
@@ -160,10 +160,10 @@ class BaseServer
     {
         $response = $this->get("user_catalog/list",  true);
 
-        if(is_array($response["result"]) &&  count($response["result"])>0 ){
-            foreach($response["result"] as $catalog){
-                if($catalog["name"]==$catalogName){
-                   return $catalog["_id"];
+        if (is_array($response["result"]) &&  count($response["result"]) > 0) {
+            foreach ($response["result"] as $catalog) {
+                if ($catalog["name"] == $catalogName) {
+                    return $catalog["_id"];
                 }
             }
         }
@@ -172,12 +172,12 @@ class BaseServer
 
     public function getArticeArrayByCatalogId($catalogID)
     {
-        if($catalogID!=null){
-            $result = $this->get("product/export?user_catalog=".$catalogID,  true);
-            if(is_array($result["result"]["items"]) &&  count($result["result"]["items"])>0 ){
-                       //return $result["result"]["items"];
+        if ($catalogID != null) {
+            $result = $this->get("product/export?user_catalog=" . $catalogID,  true);
+            if (is_array($result["result"]["items"]) &&  count($result["result"]["items"]) > 0) {
+                return $result["result"]["items"];
 
-                       return array_slice($result["result"]["items"],count($result["result"]["items"])-10);
+                // return array_slice($result["result"]["items"],count($result["result"]["items"])-5); //dev
             }
         }
         return null;
@@ -186,12 +186,12 @@ class BaseServer
     public function getAllCategories()
     {
         $response = $this->get('category');
-        if(is_array($response["result"]) &&  count($response["result"])>0 ){
+        if (is_array($response["result"]) &&  count($response["result"]) > 0) {
             $result = [];
-            foreach ($response['result'] as $item){
+            foreach ($response['result'] as $item) {
                 $result[$item["_id"]] = [
-                    'id'=>$item["_id"],
-                    'code'=>$item["code"]
+                    'id' => $item["_id"],
+                    'code' => $item["code"]
                 ];
             }
             return $result;
@@ -201,42 +201,39 @@ class BaseServer
 
     public function getAllCategoriesWithSubCategories()
     {
-        $longCategoriesList=[];
+        $longCategoriesList = [];
         $Categories = $this->getAllCategories();
-        foreach ($Categories as $Categorie){
-            $SubCategories=$this->getSubCategories($Categorie["code"]);
-    
-            
-            if($SubCategories){
-                foreach ($SubCategories as $SubCategorie){
-                    $longCategoriesList[count($longCategoriesList).$SubCategorie["id"]] = [
-                        'value'=>$Categorie["code"]."_".$SubCategorie["code"],
-                        'label'=>$Categorie["code"]." > ".$SubCategorie["code"],
-                        'code'=>$SubCategorie["code"],
-                        'parent_code'=>$Categorie["code"]
+        foreach ($Categories as $Categorie) {
+            $SubCategories = $this->getSubCategories($Categorie["code"]);
+
+
+            if ($SubCategories) {
+                foreach ($SubCategories as $SubCategorie) {
+                    $longCategoriesList[count($longCategoriesList) . $SubCategorie["id"]] = [
+                        'value' => $Categorie["code"] . "_" . $SubCategorie["code"],
+                        'label' => $Categorie["code"] . " > " . $SubCategorie["code"],
+                        'code' => $SubCategorie["code"],
+                        'parent_code' => $Categorie["code"]
                     ];
                 }
-            }        
+            }
         }
         return $longCategoriesList;
     }
 
     public function getSubCategories($category)
     {
-        $response = $this->get('subcategory?tag_4='.$category);
-        if(is_array($response["result"]) &&  count($response["result"])>0 ){
+        $response = $this->get('subcategory?tag_4=' . $category);
+        if (is_array($response["result"]) &&  count($response["result"]) > 0) {
             $result = [];
-            foreach ($response['result'] as $item){
+            foreach ($response['result'] as $item) {
                 $result[$item["_id"]] = [
-                    'id'=>$item["_id"],
-                    'code'=>$item["code"]
+                    'id' => $item["_id"],
+                    'code' => $item["code"]
                 ];
             }
             return $result;
         }
         return null;
-
     }
-
-    
 }

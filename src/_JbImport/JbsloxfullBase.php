@@ -73,17 +73,23 @@ class JbsloxfullBase extends AbstractController
     /**
      * @var String
      */
-    public $logFileName;
+    public $logKeyName;
 
     /**
      * @var String
      */
-    public $runLogJsonFile;
+    public $logKey;
 
     /**
      * @var String
      */
     public $logLevel;
+
+    /**
+     * @var 
+     */
+    public $startTime;
+
     /**
      * @var BaseServer
      */
@@ -104,16 +110,20 @@ class JbsloxfullBase extends AbstractController
         BaseServer $baseServer,
         SystemConfigService $systemConfigService
     ) {
-        $this->setLogFiles("/runLog_JbsloxBase.log", "/_log_JbsloxBase.log");
+        $this->setLogName("JbsloxBase");
+        $this->setLogKey("JbsloxBase");
         $this->init($container, $saleschannelRepository, $mediaService, $fileSaver, $connection, $baseServer, $systemConfigService);
     }
 
-    public function setLogFiles($runLogJsonFile, $logFileName)
+    public function setLogName($logKeyName)
     {
-        $this->runLogJsonFile = (__DIR__ . $runLogJsonFile);
-        $this->logFileName = (__DIR__ . $logFileName);
+        $this->logKeyName = $logKeyName;
     }
 
+    public function setLogKey($logKey)
+    {
+        $this->logKey = $logKey;
+    }
     public function init(
         ContainerInterface $container,
         SalesChannelRepositoryInterface $saleschannelRepository,
@@ -142,22 +152,8 @@ class JbsloxfullBase extends AbstractController
     }
 
 
-
-
-
-
-
     public function createAndUpdateProduct($line, $canCreate = true, $canUpdate = true): void
     {
-
-        // $handle = curl_init('https://ensyjrls6wwuecr.m.pipedream.net');
-        // $encodedData = json_encode($line);
-
-        // curl_setopt($handle, CURLOPT_POST, 1);
-        // curl_setopt($handle, CURLOPT_POSTFIELDS, $encodedData);
-        // curl_setopt($handle, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-
-        // $result = curl_exec($handle);
 
         if ($line['code'] == "" and $line['name'] == null and $line['brand'] !=  "" and isset($line['sellPrice']) and $line['sellPrice'] != "") {
             return;
@@ -169,14 +165,14 @@ class JbsloxfullBase extends AbstractController
             $line['name'] =  $line['brand'] . ' - ' . $line['name'];
         }
 
-        $this->createLog("importing code : " . $line['code'] . "\t price :" . $line['sellPrice'] . "\t brand :" . $line['brand'] . "\t title :" . $line['name']);
 
 
         $product = $this->getProductFromNumber($line['code']);
         if ($product != null and $product instanceof ProductEntity) {
             if ($canUpdate) {
+                $this->createLog("update code : " . $line['code'] . "\t price :" . $line['sellPrice'] . "\t brand :" . $line['brand'] . "\t title :" . $line['name']);
 
-                $this->createLog("Product is already there . " . $product->getProductNumber() . " ");
+                $this->createLog("Already imported , updating now. " . $product->getProductNumber() . " ");
                 //updating manufactur & name
                 $productData = $this->getProductUpdatePayload($line, $product);
 
@@ -207,6 +203,7 @@ class JbsloxfullBase extends AbstractController
             }
         } else {
             if ($canCreate) {
+                $this->createLog("importing code : " . $line['code'] . "\t price :" . $line['sellPrice'] . "\t brand :" . $line['brand'] . "\t title :" . $line['name']);
 
                 $this->createLog("Create Product START:" . "code :" . $line['code']);
                 $productData = $this->getProductInsertPayload($line, null);
@@ -224,23 +221,17 @@ class JbsloxfullBase extends AbstractController
         }
     }
 
-    public function deleteOldProductReferingBDroppy($allbdropyArticleCodeArray): void
+    public function deleteOldProductReferingBDroppy($dBProduct): void
     {
+        $this->createLog("Deleting --- " . $dBProduct->getProductNumber());
 
         /** @var EntityRepository $productRepository */
         $productRepository = $this->container->get('product.repository');
-        $allDBProducts = $this->getProducts();
-        //find/delete product not in bropy cataloge   
-        foreach ($allDBProducts as $dBProduct) {;
-            if (array_search($dBProduct->getProductNumber(), $allbdropyArticleCodeArray, true) <= 0 && !$dBProduct->getParentId()) {
-                $this->createLog("Deleting --- " . $dBProduct->getProductNumber());
-                $productRepository->delete([
-                    [
-                        'id' => $dBProduct->getId(),
-                    ],
-                ], $this->createContextWithRules());
-            }
-        }
+        $productRepository->delete([
+            [
+                'id' => $dBProduct->getId(),
+            ],
+        ], $this->createContextWithRules());
     }
 
 
@@ -248,15 +239,15 @@ class JbsloxfullBase extends AbstractController
     {
         /** @var EntityRepository $productRepository */
         $productRepository = $this->container->get('product.repository');
-        $allDB_BdroppyProducts = $this->getProducts(true);
+        $allDB_BdroppyProducts = $this->getProducts();
         //find/delete product not in bropy cataloge   
         foreach ($allDB_BdroppyProducts as $dBProduct) {
-                $this->createLog("Deleting --- " . $dBProduct->getProductNumber());
-                $productRepository->delete([
-                    [
-                        'id' => $dBProduct->getId(),
-                    ],
-                ], $this->createContextWithRules());
+            $this->createLog("Deleting --- " . $dBProduct->getProductNumber());
+            $productRepository->delete([
+                [
+                    'id' => $dBProduct->getId(),
+                ],
+            ], $this->createContextWithRules());
         }
     }
 
@@ -303,7 +294,8 @@ class JbsloxfullBase extends AbstractController
 
                 $to_time = strtotime(date("Y-m-d H:i:s"));
                 $from_time = strtotime($json['inProgress']['timeStamp']);
-                if (round(abs($to_time - $from_time) / 60, 2) < 30) {
+
+                if (round(abs($to_time - $from_time)) < (ini_get("max_execution_time") + 60)) {
                     return false;
                 } else {
                     $this->WiteWeStopedImport();
@@ -316,13 +308,31 @@ class JbsloxfullBase extends AbstractController
         }
     }
 
+
+    public function CheckRuningTaskName()
+    {
+        if (file_exists($this->fileActiveJson)) {
+            $json = json_decode(file_get_contents($this->fileActiveJson), true);
+            if ($json['inProgress']['type']) {
+                return (string) $json['inProgress']['type'];
+            }
+        }
+
+        return '';
+    }
+
+    public function GetOldSyncStatusCount()
+    {
+        return (int) $this->connection->fetchOne("SELECT count(id) FROM `slox_BDropy_Sync_Status` where `pending_json` IS NOT NULL  and  `task_type`='$this->logKeyName'");
+    }
+
     public function WiteWeStartedImport()
     {
         if (!file_exists($this->fileActiveJson)) {
             $response = array();
             $response['inProgress'] = array(
                 'timeStamp' => date("Y-m-d H:i:s"),
-                'type' => 'Jbsloxfullsync'
+                'type' => $this->logKeyName
             );
 
             file_put_contents($this->fileActiveJson, json_encode($response));
@@ -332,8 +342,6 @@ class JbsloxfullBase extends AbstractController
     }
     public function WiteWeStopedImport()
     {
-        file_put_contents($this->runLogJsonFile, date("Y-m-d H:i:s"));
-
         if (!file_exists($this->fileActiveJson)) {
             return true;
         } else {
@@ -368,7 +376,7 @@ class JbsloxfullBase extends AbstractController
      * @param $productNumber
      * @return ProductEntity
      */
-    public function getProducts($onlyBdropy=false)
+    public function getProducts()
     {
         /** @var EntityRepository $productRepository */
         $productRepository = $this->container->get('product.repository');
@@ -380,10 +388,10 @@ class JbsloxfullBase extends AbstractController
         $criteria->addFilter(new NotFilter(NotFilter::CONNECTION_AND, [
             new EqualsFilter('sloxBDropyProduct.id', null),
         ]));
-        
+
         /** @var EntitySearchResult $entities */
         $entities = $productRepository->search(
-           $criteria ,
+            $criteria,
             $this->createContextWithRules()
         );
 
@@ -418,33 +426,45 @@ class JbsloxfullBase extends AbstractController
 
 
         if ($product != null and $product instanceof ProductEntity) {
-            $randVal=1+((rand(3,47))/100);
+            $randVal = 1; //+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
+            $sp = round(floatval($model['sellPrice']), 2);
+            $Gross = $sp;
+            $Net = round($Gross / 1.19, 2);
+            $listGross = round($sp * $randVal, 2);
+            $listNet = round($listGross / 1.19, 2);
+
+            if ($Gross + 3 > $listGross) {
+                $listGross = $sp;
+                $listNet = $Net;
+            }
+
+
             $payload = [
                 'id' => $product->getId(),
                 'active' => intval($model["availability"]) > 0 ? true : false,
                 'stock' => intval($model["availability"]),
                 'purchasePrices' => [[
                     'currencyId' => Defaults::CURRENCY,
-                    'gross' => floatval($model['bestTaxable']*1.19),
+                    'gross' => floatval($model['bestTaxable'] * 1.19),
                     'net' => floatval($model['bestTaxable']),
                     'linked' => true,
                 ]],
                 'price' => [[
-                    'net' => floatval($model['sellPrice'] / 1.19),
-                    'gross' => floatval($model['sellPrice']),
+                    'net' => $Net,
+                    'gross' =>  $Gross,
                     'linked' => true,
                     'currencyId' => Defaults::CURRENCY,
                     'listPrice' => [
-                        'net' => floatval(($model['sellPrice']/1.19)*$randVal),
-                        'gross' => floatval(($model['sellPrice'])*$randVal),
+                        'net' =>  $listNet,
+                        'gross' => $listGross,
                         'linked' => true,
                         'currencyId' => Defaults::CURRENCY,
                     ],
-                ]],        
+                ]],
                 'extensions'    => [
                     'sloxBDropyProduct' => [
                         'id' => $product->getExtension('sloxBDropyProduct')->getId(),
-                        'update_json'  => ["Varient"=>true,"model"=>$model],
+                        'update_json'  => ["Varient" => true, "model" => $model],
                         'lastUpdated' => new \DateTime(),
                     ],
                 ],
@@ -487,7 +507,17 @@ class JbsloxfullBase extends AbstractController
                     $line_descriptions = rtrim($line_descriptions, ',');
                 }
             }
-            $randVal=1+((rand(3,47))/100);
+            $randVal = 1; //+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
+            $sp = round(floatval($line['sellPrice']), 2);
+            $Gross = $sp;
+            $Net = round($Gross / 1.19, 2);
+            $listGross = round($sp * $randVal, 2);
+            $listNet = round($listGross / 1.19, 2);
+
+            if ($Gross + 3 > $listGross) {
+                $listGross = $sp;
+                $listNet = $Net;
+            }
             $payload = [
                 [
                     'id' => $productId,
@@ -498,22 +528,25 @@ class JbsloxfullBase extends AbstractController
                     'weight' => $line['weight'],
                     'purchasePrices' => [[
                         'currencyId' => Defaults::CURRENCY,
-                        'gross' => floatval($line['bestTaxable']*1.19),
+                        'gross' => floatval($line['bestTaxable'] * 1.19),
                         'net' => floatval($line['bestTaxable']),
                         'linked' => true,
                     ]],
                     'price' => [[
-                        'net' => floatval($line['sellPrice'] / 1.19),
-                        'gross' => floatval($line['sellPrice']),
+                        'net' => $Net,
+                        'gross' =>  $Gross,
                         'linked' => true,
-                        'currencyId' => Defaults::CURRENCY,                    
+                        'currencyId' => Defaults::CURRENCY,
                         'listPrice' => [
-                            'net' => floatval(($line['sellPrice']/1.19)*$randVal),
-                            'gross' => floatval(($line['sellPrice'])*$randVal),
+                            'net' => $listNet,
+                            'gross' => $listGross,
                             'linked' => true,
                             'currencyId' => Defaults::CURRENCY,
                         ],
                     ]],
+                    "categories" => [
+                        ["id" => $this->getMappedCatogerId($line["attributes"])]
+                    ],
                     'deliveryTime' => $this->getdeliveryTimePayload(),
                     'extensions'    => [
                         'sloxBDropyProduct' => [
@@ -559,7 +592,17 @@ class JbsloxfullBase extends AbstractController
                 $line_descriptions = rtrim($line_descriptions, ',');
             }
         }
-        $randVal=1+((rand(3,47))/100);
+        $randVal = 1; //+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
+        $sp = round(floatval($line['sellPrice']), 2);
+        $Gross = $sp;
+        $Net = round($Gross / 1.19, 2);
+        $listGross = round($sp * $randVal, 2);
+        $listNet = round($listGross / 1.19, 2);
+
+        if ($Gross + 3 > $listGross) {
+            $listGross = $sp;
+            $listNet = $Net;
+        }
         $payload = [
             [
                 'id' => $productId,
@@ -570,24 +613,24 @@ class JbsloxfullBase extends AbstractController
                 'purchaseUnit' => 1.0,
                 'referenceUnit' => 1.0,
                 'shippingFree' => false,
-                'purchasePrices' => [[   
+                'purchasePrices' => [[
                     'currencyId' => Defaults::CURRENCY,
-                    'gross' => floatval($line['bestTaxable']*1.19),
+                    'gross' => floatval($line['bestTaxable'] * 1.19),
                     'net' => floatval($line['bestTaxable']),
                     'linked' => true
                 ]],
                 'price' => [[
-                    'net' => floatval($line['sellPrice']),
-                    'gross' => floatval($line['sellPrice'] * 1.19),
+                    'net' => $Net,
+                    'gross' =>  $Gross,
                     'linked' => true,
                     'currencyId' => Defaults::CURRENCY,
                     'listPrice' => [
-                        'net' => floatval(($line['bestTaxable']/1.19)*$randVal),
-                        'gross' => floatval(($line['sellPrice'])*$randVal),
+                        'net' =>  $listNet,
+                        'gross' => $listGross,
                         'linked' => true,
                         'currencyId' => Defaults::CURRENCY,
                     ],
-                    
+
                 ]],
 
                 'weight' => $line['weight'],
@@ -616,7 +659,7 @@ class JbsloxfullBase extends AbstractController
         ];
 
 
-    
+
         if ($product == null) {
             $productMediaID = Uuid::randomHex();
             $payload[0]["media"] = $this->getMediaPayload($line, $productMediaID);
@@ -674,35 +717,45 @@ class JbsloxfullBase extends AbstractController
     public function getProuctClildPayload($productCode, $model)
     {
         $groupId = $this->getorGenratePropertyGroupByName('model');
-        $randVal=1+((rand(3,47))/100);
+        $randVal = 1; //+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
+        $sp = round(floatval($model['sellPrice']), 2);
+        $Gross = $sp;
+        $Net = round($Gross / 1.19, 2);
+        $listGross = round($sp * $randVal, 2);
+        $listNet = round($listGross / 1.19, 2);
+
+        if ($Gross + 3 > $listGross) {
+            $listGross = $sp;
+            $listNet = $Net;
+        }
         $payload = [
             "productNumber" => "" . $productCode . "",
             "stock" => $model["availability"],
             'purchasePrices' => [[
-                        'currencyId' => Defaults::CURRENCY,
-                        'gross' => floatval($model['bestTaxable']*1.19),
-                        'net' => floatval($model['bestTaxable']),
-                        'linked' => true,
-                    ]],
+                'currencyId' => Defaults::CURRENCY,
+                'gross' => floatval($model['bestTaxable'] * 1.19),
+                'net' => floatval($model['bestTaxable']),
+                'linked' => true,
+            ]],
             "price" => [[
-                'net' => floatval($model['sellPrice'] / 1.19),
-                'gross' => floatval($model['sellPrice']),
+                'net' => $Net,
+                'gross' =>   $Gross,
                 'linked' => false,
                 'currencyId' => Defaults::CURRENCY,
                 'listPrice' => [
-                    'net' => floatval(($model['sellPrice']/1.19)*$randVal),
-                    'gross' => floatval(($model['sellPrice'])*$randVal),
+                    'net' => $listNet,
+                    'gross' => $listGross,
                     'linked' => true,
                     'currencyId' => Defaults::CURRENCY,
                 ],
             ]],
             "options" => [
                 ["id" => Uuid::randomHex(), "groupId" => $groupId, "name" => $model["model"]]
-            ],                
+            ],
             'extensions'    => [
                 'sloxBDropyProduct' => [
                     'id'           => Uuid::randomHex(),
-                    'importJson'  => ["Varient"=>true,"model"=>$model],
+                    'importJson'  => ["Varient" => true, "model" => $model],
                     'importedOn'  => new \DateTime(),
                     'lastUpdated' => new \DateTime(),
                 ],
@@ -745,7 +798,7 @@ class JbsloxfullBase extends AbstractController
 
 
 
-    
+
 
     public function getMappedCatogerId($attributes)
     {
@@ -753,19 +806,18 @@ class JbsloxfullBase extends AbstractController
 
 
         if (count($catMap) > 0) {
-   
+
             foreach ($catMap as $item) {
-                if ($item->BdropyCat->value === ($attributes["category"].'_'.$attributes["subcategory"])) {
+                if ($item->BdropyCat->value === ($attributes["category"] . '_' . $attributes["subcategory"])) {
                     $categoryRepository = $this->container->get('category.repository');
                     $catSystem = $categoryRepository->search(new Criteria([$item->ourCat->id]), Context::createDefaultContext())->first();
-                    if($catSystem){
+                    if ($catSystem) {
                         return $item->ourCat->id;
                     }
                 }
             }
         }
         return $this->systemConfigService->get('slox_product_sync.config.ImportToCategories');
-
     }
 
 
@@ -891,8 +943,6 @@ class JbsloxfullBase extends AbstractController
 
     public function getPropertiesPayloads($line)
     {
-
-
         if ($this->logLevel == 1) {
             $this->createLog("Create Properties START");
         }
@@ -1021,8 +1071,6 @@ class JbsloxfullBase extends AbstractController
             $this->createLog("adding Image To Product Media :  " . print_r($imageUrl, true));
         }
 
-
-
         $mediaId = NULL;
         $context->disableInheritance(function (Context $context) use ($imageUrl, &$mediaId): void {
             $filePathParts = explode('/', $imageUrl);
@@ -1094,9 +1142,12 @@ class JbsloxfullBase extends AbstractController
 
     public function setIniConfig()
     {
-        set_time_limit(360);
         ini_set('memory_limit', '14048M');
+
+        set_time_limit(360);
         ini_set('max_execution_time', '360');
+        //set_time_limit(90);
+        //ini_set('max_execution_time', '90');
     }
 
     /**
@@ -1104,24 +1155,61 @@ class JbsloxfullBase extends AbstractController
      */
     public function createLog($message)
     {
-        $this->lastlog = $this->lastlog . "[ " . date("Y-m-d H:i:s") . " ]:" . $message . " \n";
-        file_put_contents($this->logFileName, "[ " . date("Y-m-d H:i:s") . " ]:" . $message . " \r\n", FILE_APPEND);
+        return $this->connection->executeStatement(
+            "INSERT INTO `slox_BDropy_Sync_Log` (`task_id` ,`task_type`, `date_time`, `log`) VALUES ('$this->logKey','$this->logKeyName', now(), '$message')"
+        );
     }
 
-    public function getFileContents($file)
+    public function getLastRunTime()
     {
-        if (!file_exists($file)) {
-            file_put_contents($file, "");
+        return $this->connection->fetchOne('SELECT date_time FROM slox_BDropy_Sync_Log where task_type=\'' . $this->logKeyName . '\'');
+    }
+
+    public function getLastLog()
+    {
+        $taskid = $this->connection->fetchOne("SELECT HEX(task_id) FROM slox_BDropy_Sync_Log where task_type='$this->logKeyName' ORDER BY `date_time` DESC , `id` DESC ;");
+        $logArr = $this->connection->fetchAll("SELECT log FROM slox_BDropy_Sync_Log where task_id=UNHEX('$taskid') ");
+
+        $log = '';
+        foreach ($logArr as $line) {
+            $log .= $line['log'] . "  \r\n";
         }
-        return (string) file_get_contents($file);
+        return $log;
     }
 
     public function CleanLastLog()
     {
-        if (!file_exists($this->logFileName)) {
-            return true;
-        } else {
-            return unlink($this->logFileName);
+        $this->connection->executeStatement(
+            "DELETE FROM `slox_BDropy_Sync_Log` where task_type='$this->logKeyName'"
+        );
+
+        return true;
+    }
+
+    public function SetStartTime()
+    {
+        $this->startTime = time();
+        return $this->startTime;
+    }
+    public function CheckForExecutingTime()
+    {
+
+        if (time() > ($this->startTime + ini_get("max_execution_time") - 50)) {
+
+            throw new \Exception('Reached max execution time ');
         }
+    }
+
+
+
+
+    public function taskStatus(): JsonResponse
+    {
+        return new JsonResponse([
+            'isRunning' => (!($this->CheckCanWeStartImport())) ? 'TRUE' : (($this->GetOldSyncStatusCount() > 0) ? 'PENDING' : 'FALSE'),
+            'RunningTask' => $this->CheckRuningTaskName(),
+            'lastRun' =>  $this->getLastRunTime(),
+            'log' =>  $this->getLastLog()
+        ], 200);
     }
 }

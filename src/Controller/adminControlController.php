@@ -142,17 +142,17 @@ class adminControlController extends AbstractController
     public function newsync(Request $request): JsonResponse
     {
 
-       // try {
+        // try {
 
-            $response = $this->jbsloxnewsync->startTask();
+        $response = $this->jbsloxnewsync->startTask();
 
-            $responsejosn = new JsonResponse([
-                'success' => true,
-                'message' => 'Sync Sucessfully',
-                'log' => $response
-            ], 200);
+        $responsejosn = new JsonResponse([
+            'success' => true,
+            'message' => 'Sync Sucessfully',
+            'log' => $response
+        ], 200);
 
-            return $responsejosn;
+        return $responsejosn;
         // } catch (Exception $e) {
         //     return new JsonResponse([
         //         'success' => false,
@@ -201,7 +201,7 @@ class adminControlController extends AbstractController
             ], 200);
         }
     }
-    
+
     /**
      * @RouteScope(scopes={"api"})
      * @Route("/api/slox_product_sync/olddeleteall", name="api.slox_product_sync.olddeleteall", defaults={"auth_required"=false}, methods={"GET"})
@@ -210,7 +210,7 @@ class adminControlController extends AbstractController
     public function olddeleteall(Request $request): JsonResponse
     {
         try {
-            $response = $this->jbsloxolddelete->startTask(null,'DeleteAll');
+            $response = $this->jbsloxolddelete->startTask(null, 'DeleteAll');
 
             $responsejosn = new JsonResponse([
                 'success' => true,
@@ -279,6 +279,4 @@ class adminControlController extends AbstractController
     {
         return  $this->jbsloxproductupdate->taskStatus();
     }
-
-    
 }

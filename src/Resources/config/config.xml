@@ -27,7 +27,25 @@
             <name>sloxCheckCred</name>
         </component>
     </card>
+   <card>
+        <title lang="en-US">Import Setting</title>
 
+        <input-field type="int">
+            <name>taskItemInterval</name>
+            <label>Item count in one Process </label>
+            <defaultValue>20</defaultValue>
+            <placeholder>20</placeholder>
+            <disabled>True</disabled>
+        </input-field>
+        <input-field type="int">
+            <name>taskTimeInterval</name>
+            <label> run Every unitl complete(minutes)</label>
+            <defaultValue>5</defaultValue>
+            <placeholder> 5 min  </placeholder>
+            <disabled>True</disabled>
+        </input-field>
+
+    </card>
 
     <card>
         <title lang="en-US">Corn Task</title>
@@ -37,10 +55,10 @@
             <label>Run Automatic Sync</label>
             <defaultValue>true</defaultValue>
         </input-field>
-        <input-field type="text">
+        <input-field type="int">
             <name>syncTimeInterval</name>
-            <label>Sync Every </label>
-            <defaultValue> 5 hour </defaultValue>
+            <label>Sync Every (hour)</label>
+            <defaultValue> 5</defaultValue>
             <placeholder> 5 hour </placeholder>
             <disabled>True</disabled>
         </input-field>
