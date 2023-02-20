@@ -426,23 +426,24 @@ class JbsloxfullBase extends AbstractController
 
 
         if ($product != null and $product instanceof ProductEntity) {
-            $randVal = 1; //+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
+            //$randVal = 1+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
             $sp = round(floatval($model['sellPrice']), 2);
             $Gross = $sp;
             $Net = round($Gross / 1.19, 2);
-            $listGross = round($sp * $randVal, 2);
-            $listNet = round($listGross / 1.19, 2);
+            // $listGross = round($sp * $randVal, 2);
+            // $listNet = round($listGross / 1.19, 2);
 
-            if ($Gross + 3 > $listGross) {
-                $listGross = $sp;
-                $listNet = $Net;
-            }
+            // if ($Gross + 3 > $listGross) {
+            //     $listGross = $sp;
+            //     $listNet = $Net;
+            // }
 
 
             $payload = [
                 'id' => $product->getId(),
                 'active' => intval($model["availability"]) > 0 ? true : false,
                 'stock' => intval($model["availability"]),
+                'isCloseout' => true,
                 'purchasePrices' => [[
                     'currencyId' => Defaults::CURRENCY,
                     'gross' => floatval($model['bestTaxable'] * 1.19),
@@ -453,13 +454,13 @@ class JbsloxfullBase extends AbstractController
                     'net' => $Net,
                     'gross' =>  $Gross,
                     'linked' => true,
-                    'currencyId' => Defaults::CURRENCY,
-                    'listPrice' => [
-                        'net' =>  $listNet,
-                        'gross' => $listGross,
-                        'linked' => true,
-                        'currencyId' => Defaults::CURRENCY,
-                    ],
+                    'currencyId' => Defaults::CURRENCY//,
+                    // 'listPrice' => [
+                    //     'net' =>  $listNet,
+                    //     'gross' => $listGross,
+                    //     'linked' => true,
+                    //     'currencyId' => Defaults::CURRENCY,
+                    // ],
                 ]],
                 'extensions'    => [
                     'sloxBDropyProduct' => [
@@ -507,17 +508,17 @@ class JbsloxfullBase extends AbstractController
                     $line_descriptions = rtrim($line_descriptions, ',');
                 }
             }
-            $randVal = 1; //+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
+            //$randVal = 1+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
             $sp = round(floatval($line['sellPrice']), 2);
             $Gross = $sp;
             $Net = round($Gross / 1.19, 2);
-            $listGross = round($sp * $randVal, 2);
-            $listNet = round($listGross / 1.19, 2);
+            // $listGross = round($sp * $randVal, 2);
+            // $listNet = round($listGross / 1.19, 2);
 
-            if ($Gross + 3 > $listGross) {
-                $listGross = $sp;
-                $listNet = $Net;
-            }
+            // if ($Gross + 3 > $listGross) {
+            //     $listGross = $sp;
+            //     $listNet = $Net;
+            // }
             $payload = [
                 [
                     'id' => $productId,
@@ -525,6 +526,7 @@ class JbsloxfullBase extends AbstractController
                     'description' =>  $line_descriptions,
                     'active' => intval($stock) > 0 ? true : false,
                     'stock' => intval($stock),
+                    'isCloseout' => true,
                     'weight' => $line['weight'],
                     'purchasePrices' => [[
                         'currencyId' => Defaults::CURRENCY,
@@ -536,13 +538,13 @@ class JbsloxfullBase extends AbstractController
                         'net' => $Net,
                         'gross' =>  $Gross,
                         'linked' => true,
-                        'currencyId' => Defaults::CURRENCY,
-                        'listPrice' => [
-                            'net' => $listNet,
-                            'gross' => $listGross,
-                            'linked' => true,
-                            'currencyId' => Defaults::CURRENCY,
-                        ],
+                        'currencyId' => Defaults::CURRENCY//,
+                        // 'listPrice' => [
+                        //     'net' => $listNet,
+                        //     'gross' => $listGross,
+                        //     'linked' => true,
+                        //     'currencyId' => Defaults::CURRENCY,
+                        // ],
                     ]],
                     "categories" => [
                         ["id" => $this->getMappedCatogerId($line["attributes"])]
@@ -592,17 +594,17 @@ class JbsloxfullBase extends AbstractController
                 $line_descriptions = rtrim($line_descriptions, ',');
             }
         }
-        $randVal = 1; //+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
+        //$randVal = 1+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
         $sp = round(floatval($line['sellPrice']), 2);
         $Gross = $sp;
         $Net = round($Gross / 1.19, 2);
-        $listGross = round($sp * $randVal, 2);
-        $listNet = round($listGross / 1.19, 2);
+        // $listGross = round($sp * $randVal, 2);
+        // $listNet = round($listGross / 1.19, 2);
 
-        if ($Gross + 3 > $listGross) {
-            $listGross = $sp;
-            $listNet = $Net;
-        }
+        // if ($Gross + 3 > $listGross) {
+        //     $listGross = $sp;
+        //     $listNet = $Net;
+        // }
         $payload = [
             [
                 'id' => $productId,
@@ -610,6 +612,7 @@ class JbsloxfullBase extends AbstractController
                 'active' => intval($stock) > 0 ? true : false,
                 'taxId' =>  $this->getTaxId(),
                 'stock' => intval($stock),
+                'isCloseout' => true,
                 'purchaseUnit' => 1.0,
                 'referenceUnit' => 1.0,
                 'shippingFree' => false,
@@ -623,13 +626,13 @@ class JbsloxfullBase extends AbstractController
                     'net' => $Net,
                     'gross' =>  $Gross,
                     'linked' => true,
-                    'currencyId' => Defaults::CURRENCY,
-                    'listPrice' => [
-                        'net' =>  $listNet,
-                        'gross' => $listGross,
-                        'linked' => true,
-                        'currencyId' => Defaults::CURRENCY,
-                    ],
+                    'currencyId' => Defaults::CURRENCY//,
+                    // 'listPrice' => [
+                    //     'net' =>  $listNet,
+                    //     'gross' => $listGross,
+                    //     'linked' => true,
+                    //     'currencyId' => Defaults::CURRENCY,
+                    // ],
 
                 ]],
 
@@ -717,17 +720,17 @@ class JbsloxfullBase extends AbstractController
     public function getProuctClildPayload($productCode, $model)
     {
         $groupId = $this->getorGenratePropertyGroupByName('model');
-        $randVal = 1; //+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
+        //$randVal = 1+((rand(0,1))*rand(0,1)*((rand(10,25))/100));
         $sp = round(floatval($model['sellPrice']), 2);
         $Gross = $sp;
         $Net = round($Gross / 1.19, 2);
-        $listGross = round($sp * $randVal, 2);
-        $listNet = round($listGross / 1.19, 2);
+        // $listGross = round($sp * $randVal, 2);
+        // $listNet = round($listGross / 1.19, 2);
 
-        if ($Gross + 3 > $listGross) {
-            $listGross = $sp;
-            $listNet = $Net;
-        }
+        // if ($Gross + 3 > $listGross) {
+        //     $listGross = $sp;
+        //     $listNet = $Net;
+        // }
         $payload = [
             "productNumber" => "" . $productCode . "",
             "stock" => $model["availability"],
@@ -741,13 +744,13 @@ class JbsloxfullBase extends AbstractController
                 'net' => $Net,
                 'gross' =>   $Gross,
                 'linked' => false,
-                'currencyId' => Defaults::CURRENCY,
-                'listPrice' => [
-                    'net' => $listNet,
-                    'gross' => $listGross,
-                    'linked' => true,
-                    'currencyId' => Defaults::CURRENCY,
-                ],
+                'currencyId' => Defaults::CURRENCY//,
+                // 'listPrice' => [
+                //     'net' => $listNet,
+                //     'gross' => $listGross,
+                //     'linked' => true,
+                //     'currencyId' => Defaults::CURRENCY,
+                // ],
             ]],
             "options" => [
                 ["id" => Uuid::randomHex(), "groupId" => $groupId, "name" => $model["model"]]

@@ -35,15 +35,15 @@ Component.register('slox-bdropy-import-fullsync', {
             }
         },
         isRunning: {
-            type: Boolean,
+            type: String,
             default() {
-                return false;
+                return 'FALSE';
             }
         },
         islastUpdateCounter: {
             type: Number,
             default() {
-                return 11;
+                return 6;
             }
         },
     },

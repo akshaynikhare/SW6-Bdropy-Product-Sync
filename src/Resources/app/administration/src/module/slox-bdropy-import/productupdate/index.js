@@ -35,15 +35,15 @@ Component.register('slox-bdropy-import-productupdate', {
             }
         },
         isRunning: {
-            type: Boolean,
+            type: String,
             default() {
-                return false;
+                return 'FALSE';
             }
         },
         islastUpdateCounter: {
             type: Number,
             default() {
-                return 11;
+                return 6;
             }
         },
     },
@@ -68,12 +68,12 @@ Component.register('slox-bdropy-import-productupdate', {
                 this.lastSynced = response.lastRun.trim();
             }
             this._timeout = setTimeout(this.onSubmitStatus, 2000);
-            this.isRunning = true;
+            this.isRunning = 'TRUE';
             this.isLoading = true;
-            if (!response.isRunning) {
+            if (response.isRunning=='FALSE') {
                 if (this.islastUpdateCounter > 10) {
                     clearInterval(this._timeout);
-                    this.isRunning = false;
+     
                     this.isLoading = false;
                 } else {
                     this.islastUpdateCounter = this.islastUpdateCounter + 1;
@@ -88,7 +88,7 @@ Component.register('slox-bdropy-import-productupdate', {
                 this.islastUpdateCounter = 0;
                 this._timeout = setTimeout(this.onSubmitStatus, 2000);
                 this.isLoading = true;
-                this.isRunning = true;
+                this.isRunning = 'TRUE';
             }
             let response = await this.AdminControlService.productupdate();
         },
