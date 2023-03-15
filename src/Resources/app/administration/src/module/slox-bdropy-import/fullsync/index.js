@@ -40,12 +40,7 @@ Component.register('slox-bdropy-import-fullsync', {
                 return 'FALSE';
             }
         },
-        islastUpdateCounter: {
-            type: Number,
-            default() {
-                return 6;
-            }
-        },
+
     },
 
     data() {
@@ -56,9 +51,6 @@ Component.register('slox-bdropy-import-fullsync', {
         };
     },
     watch: {
-        'isRunning'() {
-            this.onSubmitStatus();
-        }
     },
     methods: {
         async onSubmitStatus() {
@@ -70,27 +62,26 @@ Component.register('slox-bdropy-import-fullsync', {
             this._timeout = setTimeout(this.onSubmitStatus, 2000);
             this.isRunning = 'TRUE';
             this.isLoading = true;
-            this.isRunning = response.isRunning;
-            if (response.isRunning=='FALSE') {
-                if (this.islastUpdateCounter > 10) {
-                    clearInterval(this._timeout);
-                    this.isLoading = false;
-                } else {
-                    this.islastUpdateCounter = this.islastUpdateCounter + 1;
-                }
+           
+            if (response.isRunning==='FALSE') {
+                clearInterval(this._timeout);
+                this.isLoading = false;
+                this.isRunning = 'FALSE';
+            }else  if (response.isRunning==='PENDING') {
+                this.isRunning = 'Pending';
+                let response1 = await this.AdminControlService.fullsync();
             }
-            console.log("checking status=" + this.islastUpdateCounter);
 
         },
         async onSubmit() {
             clearInterval(this._timeout);
             if (!this.isRunning) {
-                this.islastUpdateCounter = 0;
                 this._timeout = setTimeout(this.onSubmitStatus, 2000);
                 this.isLoading = true;
                 this.isRunning =  'TRUE';
             }
             let response = await this.AdminControlService.fullsync();
+            location.reload();
         },
     },
 

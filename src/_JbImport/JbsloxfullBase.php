@@ -309,17 +309,6 @@ class JbsloxfullBase extends AbstractController
     }
 
 
-    public function CheckRuningTaskName()
-    {
-        if (file_exists($this->fileActiveJson)) {
-            $json = json_decode(file_get_contents($this->fileActiveJson), true);
-            if ($json['inProgress']['type']) {
-                return (string) $json['inProgress']['type'];
-            }
-        }
-
-        return '';
-    }
 
     public function GetOldSyncStatusCount()
     {
@@ -1223,7 +1212,6 @@ class JbsloxfullBase extends AbstractController
     {
         return new JsonResponse([
             'isRunning' => (!($this->CheckCanWeStartImport())) ? 'TRUE' : (($this->GetOldSyncStatusCount() > 0) ? 'PENDING' : 'FALSE'),
-            'RunningTask' => $this->CheckRuningTaskName(),
             'lastRun' =>  $this->getLastRunTime(),
             'log' =>  $this->getLastLog()
         ], 200);
