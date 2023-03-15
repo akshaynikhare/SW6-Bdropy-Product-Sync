@@ -63,17 +63,14 @@ class Jbsloxnewsync extends JbsloxfullBase
         $this->SetStartTime();
 
 
-        if (!($this->CheckCanWeStartImport())) {
-            return 'one of the import is still in progress';
-        }
-
 
 
         if ($whoStarted) {
             $this->createLog(" Process Started by > " . $whoStarted);
+            $this->setLogName($whoStarted+"_Jbsloxnewsync");
+
         }
 
-        $this->WiteWeStartedImport();
         try {
             $this->checkConfig();
 
@@ -106,7 +103,7 @@ class Jbsloxnewsync extends JbsloxfullBase
         } catch (Exception $e) {
             $this->createLog("Exiting!! Error:" . $e->getMessage());
         }
-        $this->WiteWeStopedImport();
+
 
 
         return $this->getLastLog();

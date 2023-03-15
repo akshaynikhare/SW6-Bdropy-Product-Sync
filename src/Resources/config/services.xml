@@ -88,6 +88,7 @@
 			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxolddelete" />
 			<argument type="service" id="slox_product_sync\_JbImport\Jbsloxproductupdate" />
 			<argument type="service" id="slox_product_sync\Controller\bdroppy\BaseServer" />
+			<argument type="service" id="Doctrine\DBAL\Connection" />
 			<call method="setContainer">
 				<argument type="service" id="service_container" />
 			</call>

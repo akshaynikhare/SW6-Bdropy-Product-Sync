@@ -68,6 +68,14 @@
             <defaultValue>fullsync</defaultValue>
         </input-field>
 
+        <input-field type="text">
+            <name>CornManulTrigger</name>
+            <label>if corn task done not Automatically you can call it bi this link</label>
+            <disabled>True</disabled>
+            <defaultValue>[Root]/api/slox_product_sync/sync</defaultValue>
+            <placeholder>[Root]/api/slox_product_sync/sync</placeholder>
+        </input-field>
+
     </card>
 
 

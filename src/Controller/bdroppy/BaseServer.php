@@ -159,7 +159,6 @@ class BaseServer
     public function getUserCatalogIdByName($catalogName)
     {
         $response = $this->get("user_catalog/list",  true);
-
         if (is_array($response["result"]) &&  count($response["result"]) > 0) {
             foreach ($response["result"] as $catalog) {
                 if ($catalog["name"] == $catalogName) {
@@ -167,6 +166,7 @@ class BaseServer
                 }
             }
         }
+        throw "Bdropy Catalog not found"; 
         return null;
     }
 

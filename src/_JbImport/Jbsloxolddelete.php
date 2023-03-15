@@ -60,19 +60,13 @@ class Jbsloxolddelete extends JbsloxfullBase
         $this->setLogKey($key);
         $this->SetStartTime();
 
-        if (!($this->CheckCanWeStartImport())) {
-            return 'one of the import is still in progress';
-        }
 
-        if (!($this->CleanLastLog())) {
-            return 'Can not clearn last log';
-        }
 
         if ($whoStarted) {
             $this->createLog(" Process Started by > " . $whoStarted);
-        }
+            $this->setLogName($whoStarted+"_Jbsloxolddelete");
 
-        $this->WiteWeStartedImport();
+        }
         $this->createLog("------------------------------------------Import Started------------------------------------------");
 
         try {
@@ -85,7 +79,7 @@ class Jbsloxolddelete extends JbsloxfullBase
         } catch (Exception $e) {
             $this->createLog("Exiting!! Error:" . $e->getMessage());
         }
-        $this->WiteWeStopedImport();
+
         $this->createLog("------------------------------------------Import Ended------------------------------------------");
 
         return $this->getLastLog();

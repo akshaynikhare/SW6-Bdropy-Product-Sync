@@ -70,6 +70,8 @@ class Jbsloxproductupdate extends JbsloxfullBase
 
         if ($whoStarted) {
             $this->createLog(" Process Started by > " . $whoStarted);
+            $this->setLogName($whoStarted+"_Jbsloxproductupdate");
+
         }
 
         $this->WiteWeStartedImport();

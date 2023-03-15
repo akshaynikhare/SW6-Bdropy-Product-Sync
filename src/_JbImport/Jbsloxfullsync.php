@@ -61,36 +61,29 @@ class Jbsloxfullsync extends JbsloxfullBase
         $this->setLogKey($key);
         $this->SetStartTime();
 
-
-        if (!($this->CheckCanWeStartImport())) {
-            return 'one of the import is still in progress';
-        }
-
-
         if ($whoStarted) {
             $this->createLog(" Process Started by > " . $whoStarted);
+            $this->setLogName($whoStarted+"_Jbsloxfullsync");
         }
 
-        $this->WiteWeStartedImport();
-        try {
+
             $this->checkConfig();
 
             //check for old pending runs
             $count =  $this->GetOldSyncStatusCount();
             $this->CheckForExecutingTime();
+            
             if ($count > 0) {
-
-
                 $this->createLog("-----------------------------------------old Sync yet to complete .... resuming------------------------------------------");
                 $oldkey = $this->connection->fetchOne("SELECT HEX(`id`)  FROM `slox_BDropy_Sync_Status` where `pending_json` IS NOT NULL   and `task_type`='$this->logKeyName' ORDER BY `updated_at`;");
                 $this->setLogKey($oldkey);
                 $this->createProductNext($oldkey);
             } else {
-                if (!($this->CleanLastLog())) {
-                    return 'Can not clearn last log';
-                }
+
                 $this->createLog("------------------------------------------Import Started------------------------------------------");
+
                 $ArticleList = $this->importProductsFromBdroppy();
+
 
                 $this->createLog("item to be imported : " . count($ArticleList));
 
@@ -100,10 +93,6 @@ class Jbsloxfullsync extends JbsloxfullBase
                 );
                 $this->createProductNext($key);
             }
-        } catch (Exception $e) {
-            $this->createLog("Exiting!! Error:" . $e->getMessage());
-        }
-        $this->WiteWeStopedImport();
 
         return $this->getLastLog();
     }

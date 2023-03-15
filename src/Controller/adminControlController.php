@@ -18,6 +18,7 @@ use slox_product_sync\_JbImport\Jbsloxnewsync;
 use slox_product_sync\_JbImport\Jbsloxolddelete;
 use slox_product_sync\_JbImport\Jbsloxproductupdate;
 use slox_product_sync\Controller\bdroppy\BaseServer;
+use Doctrine\DBAL\Connection;
 
 
 /**
@@ -64,6 +65,10 @@ class adminControlController extends AbstractController
      * @var BaseServer
      */
     private $baseServer;
+        /**
+     * @var Connection
+     */
+    public $connection;
 
 
     /**
@@ -77,7 +82,8 @@ class adminControlController extends AbstractController
         Jbsloxnewsync $jbsloxnewsync,
         Jbsloxolddelete $jbsloxolddelete,
         Jbsloxproductupdate $jbsloxproductupdate,
-        BaseServer $baseServer
+        BaseServer $baseServer,
+        Connection $connection
 
     ) {
         $this->systemConfigService = $systemConfigService;
@@ -88,8 +94,67 @@ class adminControlController extends AbstractController
         $this->jbsloxolddelete = $jbsloxolddelete;
         $this->jbsloxproductupdate = $jbsloxproductupdate;
         $this->baseServer = $baseServer;
+        $this->connection = $connection;
     }
 
+    /**
+     * @RouteScope(scopes={"api"})
+     * @Route("/api/slox_product_sync/sync", name="api.slox_product_sync.sync", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/sync", name="api.slox_product_sync_old.sync", defaults={"auth_required"=false}, methods={"GET"})
+     */
+    public function sync(Request $request): JsonResponse
+    {
+
+        try {
+
+            $count =   $this->connection->fetchOne("SELECT count(`task_type`)  FROM `slox_BDropy_Sync_Status` where `pending_json` IS NOT NULL ORDER BY `updated_at`;");
+            if ($count > 0) {
+
+                $oldType = $this->connection->fetchOne("SELECT `task_type`  FROM `slox_BDropy_Sync_Status` where `pending_json` IS NOT NULL ORDER BY `updated_at`;");
+
+                switch ((string)  $oldType) {
+                    case 'Jbsloxfullsync':
+                        $response = $this->jbsloxfullsync->startTask("controller_SYNC_Pending_Handler");
+                        break;
+                    case 'Jbsloxnewsync':
+                        $response = $this->jbsloxnewsync->startTask("controller_SYNC_Pending_Handler");
+                        break;
+                    case 'Jbsloxolddelete':
+                        $response = $this->jbsloxolddelete->startTask("controller_SYNC_Pending_Handler");
+                        break;
+                    case 'Jbsloxproductupdate':
+                        $response = $this->jbsloxproductupdate->startTask("controller_SYNC_Pending_Handler");
+                        break;
+                    default:
+                }
+               
+            }else{
+                if ((bool) $this->systemConfigService->get('slox_product_sync.config.cornTaskActive')) {
+                    $response = '';
+                    switch ((string) $this->systemConfigService->get('slox_product_sync.config.cornSyncMethod')) {
+                        case 'fullsync':
+                            $response = $this->jbsloxfullsync->startTask("controller_SYNC_SyncMainTask");
+                            break;
+                        case 'newsync':
+                            $response = $this->jbsloxnewsync->startTask("controller_SYNC_SyncMainTask");
+                            break;
+                        case 'olddelete':
+                            $response = $this->jbsloxolddelete->startTask("controller_SYNC_SyncMainTask");
+                            break;
+                        case 'productupdate':
+                            $response = $this->jbsloxproductupdate->startTask("controller_SYNC_SyncMainTask");
+                            break;
+                        default:
+                           
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            echo ("Exiting!!  Error:" . $e->getMessage());
+        }
+        
+       die();
+    }
 
 
     /**

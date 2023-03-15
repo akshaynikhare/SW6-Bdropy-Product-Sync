@@ -295,7 +295,7 @@ class JbsloxfullBase extends AbstractController
                 $to_time = strtotime(date("Y-m-d H:i:s"));
                 $from_time = strtotime($json['inProgress']['timeStamp']);
 
-                if (round(abs($to_time - $from_time)) < (ini_get("max_execution_time") + 60)) {
+                if (round(abs($to_time - $from_time)) < 60) {
                     return false;
                 } else {
                     $this->WiteWeStopedImport();
@@ -323,7 +323,20 @@ class JbsloxfullBase extends AbstractController
 
     public function GetOldSyncStatusCount()
     {
-        return (int) $this->connection->fetchOne("SELECT count(id) FROM `slox_BDropy_Sync_Status` where `pending_json` IS NOT NULL  and  `task_type`='$this->logKeyName'");
+      //make sure one latest is pending of all type 
+
+      $Jbsloxfullsync_count= (int) $this->connection->fetchOne("SELECT count(id) FROM `slox_BDropy_Sync_Status` where `pending_json` IS NOT NULL  and  `task_type`='$this->logKeyName'  ORDER BY `slox_BDropy_Sync_Status`.`created_at` DESC");
+
+      if($Jbsloxfullsync_count > 1){
+        $_preserve_id=  $this->connection->fetchOne("SELECT HEX(`id`) FROM `slox_BDropy_Sync_Status` where `pending_json` IS NOT NULL  and  `task_type`='$this->logKeyName'  ORDER BY `slox_BDropy_Sync_Status`.`created_at` DESC");
+       
+        $this->connection->executeStatement(
+            "DELETE FROM `slox_BDropy_Sync_Status` where task_type='$this->logKeyName' and `id`!=UNHEX('$_preserve_id')"
+        );
+      }
+      $Jbsloxfullsync_count= (int) $this->connection->fetchOne("SELECT count(id) FROM `slox_BDropy_Sync_Status` where `pending_json` IS NOT NULL  and  `task_type`='$this->logKeyName'  ORDER BY `slox_BDropy_Sync_Status`.`created_at` DESC");
+
+        return $Jbsloxfullsync_count;
     }
 
     public function WiteWeStartedImport()
@@ -1197,7 +1210,7 @@ class JbsloxfullBase extends AbstractController
     public function CheckForExecutingTime()
     {
 
-        if (time() > ($this->startTime + ini_get("max_execution_time") - 50)) {
+        if (time() > ($this->startTime + 60)) {
 
             throw new \Exception('Reached max execution time ');
         }
