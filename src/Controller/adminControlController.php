@@ -3,11 +3,9 @@
 namespace slox_product_sync\Controller;
 
 use Exception;
-use Shopware\Core\Framework\Routing\Annotation\Acl;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\HeaderUtils;
@@ -20,10 +18,6 @@ use slox_product_sync\_JbImport\Jbsloxproductupdate;
 use slox_product_sync\Controller\bdroppy\BaseServer;
 use Doctrine\DBAL\Connection;
 
-
-/**
- * @Acl(value={"system.slox_product_sync"})
- */
 class adminControlController extends AbstractController
 {
 
@@ -98,9 +92,8 @@ class adminControlController extends AbstractController
     }
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/sync", name="api.slox_product_sync.sync", defaults={"auth_required"=false}, methods={"GET"})
-     * @Route("/api/v{version}/slox_product_sync/sync", name="api.slox_product_sync_old.sync", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/slox_product_sync/sync", name="api.slox_product_sync.sync", defaults={"auth_required"=false, "_acl"={"_routeScope"={"api"},"system.slox_product_sync"}}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/sync", name="api.slox_product_sync_old.sync", defaults={"auth_required"=false, "_acl"={"_routeScope"={"api"},"system.slox_product_sync"}}, methods={"GET"})
      */
     public function sync(Request $request): JsonResponse
     {
@@ -158,9 +151,8 @@ class adminControlController extends AbstractController
 
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/fullsync", name="api.slox_product_sync.fullsync", defaults={"auth_required"=false}, methods={"GET"})
-     * @Route("/api/v{version}/slox_product_sync/fullsync", name="api.slox_product_sync_old.fullsync", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/slox_product_sync/fullsync", name="api.slox_product_sync.fullsync", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/fullsync", name="api.slox_product_sync_old.fullsync", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
      */
     public function fullsync(Request $request): JsonResponse
     {
@@ -186,9 +178,8 @@ class adminControlController extends AbstractController
 
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/fullsync_status", name="api.slox_product_sync.fullsync_status", defaults={"auth_required"=false}, methods={"GET"})
-     * @Route("/api/v{version}/slox_product_sync/fullsync_status", name="api.slox_product_sync_old.fullsync_status", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/slox_product_sync/fullsync_status", name="api.slox_product_sync.fullsync_status", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/fullsync_status", name="api.slox_product_sync_old.fullsync_status", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
      */
     public function fullsync_status(Request $request): JsonResponse
     {
@@ -200,9 +191,8 @@ class adminControlController extends AbstractController
 
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/newsync", name="api.slox_product_sync.newsync", defaults={"auth_required"=false}, methods={"GET"})
-     * @Route("/api/v{version}/slox_product_sync/newsync", name="api.slox_product_sync_old.newsync", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/slox_product_sync/newsync", name="api.slox_product_sync.newsync", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/newsync", name="api.slox_product_sync_old.newsync", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
      */
     public function newsync(Request $request): JsonResponse
     {
@@ -228,9 +218,8 @@ class adminControlController extends AbstractController
 
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/newsync_status", name="api.slox_product_sync.newsync_status", defaults={"auth_required"=false}, methods={"GET"})
-     * @Route("/api/v{version}/slox_product_sync/newsync_status", name="api.slox_product_sync_old.newsync_status", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/slox_product_sync/newsync_status", name="api.slox_product_sync.newsync_status", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/newsync_status", name="api.slox_product_sync_old.newsync_status", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
      */
     public function newsync_status(Request $request): JsonResponse
     {
@@ -241,9 +230,8 @@ class adminControlController extends AbstractController
 
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/olddelete", name="api.slox_product_sync.olddelete", defaults={"auth_required"=false}, methods={"GET"})
-     * @Route("/api/v{version}/slox_product_sync/olddelete", name="api.slox_product_sync_old.olddelete", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/slox_product_sync/olddelete", name="api.slox_product_sync.olddelete", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/olddelete", name="api.slox_product_sync_old.olddelete", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
      */
     public function olddelete(Request $request): JsonResponse
     {
@@ -268,9 +256,8 @@ class adminControlController extends AbstractController
     }
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/olddeleteall", name="api.slox_product_sync.olddeleteall", defaults={"auth_required"=false}, methods={"GET"})
-     * @Route("/api/v{version}/slox_product_sync/olddeleteall", name="api.slox_product_sync_old.olddeleteall", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/slox_product_sync/olddeleteall", name="api.slox_product_sync.olddeleteall", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/olddeleteall", name="api.slox_product_sync_old.olddeleteall", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
      */
     public function olddeleteall(Request $request): JsonResponse
     {
@@ -295,9 +282,8 @@ class adminControlController extends AbstractController
 
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/olddelete_status", name="api.slox_product_sync.olddelete_status", defaults={"auth_required"=false}, methods={"GET"})
-     * @Route("/api/v{version}/slox_product_sync/olddelete_status", name="api.slox_product_sync_old.olddelete_status", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/slox_product_sync/olddelete_status", name="api.slox_product_sync.olddelete_status", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/olddelete_status", name="api.slox_product_sync_old.olddelete_status", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
      */
     public function olddelete_status(Request $request): JsonResponse
     {
@@ -308,9 +294,8 @@ class adminControlController extends AbstractController
 
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/productupdate", name="api.slox_product_sync.productupdate", defaults={"auth_required"=false}, methods={"GET"})
-     * @Route("/api/v{version}/slox_product_sync/productupdate", name="api.slox_product_sync_old.productupdate", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/slox_product_sync/productupdate", name="api.slox_product_sync.productupdate", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/productupdate", name="api.slox_product_sync_old.productupdate", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
      */
     public function productupdate(Request $request): JsonResponse
     {
@@ -336,9 +321,8 @@ class adminControlController extends AbstractController
 
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/productupdate_status", name="api.slox_product_sync.productupdate_status", defaults={"auth_required"=false}, methods={"GET"})
-     * @Route("/api/v{version}/slox_product_sync/productupdate_status", name="api.slox_product_sync_old.productupdate_status", defaults={"auth_required"=false}, methods={"GET"})
+     * @Route("/api/slox_product_sync/productupdate_status", name="api.slox_product_sync.productupdate_status", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
+     * @Route("/api/v{version}/slox_product_sync/productupdate_status", name="api.slox_product_sync_old.productupdate_status", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"GET"})
      */
     public function productupdate_status(Request $request): JsonResponse
     {

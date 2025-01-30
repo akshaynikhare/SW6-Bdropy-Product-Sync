@@ -1,7 +1,4 @@
- ## $\colorbox{#FFBAB7}{Please proceed with caution.}$
- Note: This project is still under development and has not been thoroughly tested yet.
-
-# Shopware 6 Plugins - slox_product_sync
+# Shopware 6 Plugins - slox_product_sync  - dropshipping - Bdropy.com
 
 SW6-Bdropy-Product-Sync is a plugin for the Shopware 6 CMS platform that enables users to easily sync products from Bdropy.com, a leading dropshipping company, with their online store. This user-friendly plugin automates the process of importing and syncing products, saving valuable time and resources. With SW6-Bdropy-Product-Sync, users can expand their product offerings without investing in inventory, making it an essential tool for anyone looking to streamline their dropshipping business and grow their online store.
 

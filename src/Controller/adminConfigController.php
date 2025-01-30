@@ -3,12 +3,10 @@
 namespace slox_product_sync\Controller;
 
 use Exception;
-use Shopware\Core\Framework\Routing\Annotation\Acl;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\HeaderUtils;
@@ -23,9 +21,6 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 
 
-/**
- * @Acl(value={"system.slox_product_sync"})
- */
 class adminConfigController extends AbstractController
 {
 
@@ -74,12 +69,13 @@ class adminConfigController extends AbstractController
         $this->baseServer = $baseServer;
     }
 
+   
+
 
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/credenquire", name="api.slox_product_sync.credenquire", methods={"POST"})
-     * @Route("/api/v{version}/slox_product_sync/credenquire", name="api.slox_product_sync_old.credenquire", methods={"POST"})
+     * @Route("/api/slox_product_sync/credenquire", name="api.slox_product_sync.credenquire",defaults={"_routeScope"={"api"}, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
+     * @Route("/api/v{version}/slox_product_sync/credenquire", name="api.slox_product_sync_old.credenquire",defaults={"_routeScope"={"api"}, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
      */
     public function credenquire(Request $request): JsonResponse
     {
@@ -111,9 +107,8 @@ class adminConfigController extends AbstractController
     }
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/bdropy/catogerytree", name="api.slox_product_sync.bdropy.catogerytree", defaults={"auth_required"=false}, methods={"POST"})
-     * @Route("/api/v{version}/slox_product_sync/bdropy/catogerytree", name="api.slox_product_sync_old.bdropy.catogerytree", defaults={"auth_required"=false}, methods={"POST"})
+     * @Route("/api/slox_product_sync/bdropy/catogerytree", name="api.slox_product_sync.bdropy.catogerytree", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
+     * @Route("/api/v{version}/slox_product_sync/bdropy/catogerytree", name="api.slox_product_sync_old.bdropy.catogerytree", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
      */
     public function bdropy_catogerytree(Request $request): JsonResponse
     {
@@ -132,9 +127,8 @@ class adminConfigController extends AbstractController
 
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/bdropy/currentmappings", name="api.slox_product_sync.bdropy.currentmappings", defaults={"auth_required"=false}, methods={"POST"})
-     * @Route("/api/v{version}/slox_product_sync/bdropy/currentmappings", name="api.slox_product_sync_old.bdropy.currentmappings", defaults={"auth_required"=false}, methods={"POST"})
+     * @Route("/api/slox_product_sync/bdropy/currentmappings", name="api.slox_product_sync.bdropy.currentmappings", defaults={"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
+     * @Route("/api/v{version}/slox_product_sync/bdropy/currentmappings", name="api.slox_product_sync_old.bdropy.currentmappings", defaults={"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
      */
     public function bdropy_currentmappings(Request $request): JsonResponse
     {
@@ -153,9 +147,8 @@ class adminConfigController extends AbstractController
     }
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/bdropy/addmappings", name="api.slox_product_sync.bdropy.addmappings", defaults={"auth_required"=false}, methods={"POST"})
-     * @Route("/api/v{version}/slox_product_sync/bdropy/addmappings", name="api.slox_product_sync_old.bdropy.addmappings", defaults={"auth_required"=false}, methods={"POST"})
+     * @Route("/api/slox_product_sync/bdropy/addmappings", name="api.slox_product_sync.bdropy.addmappings", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
+     * @Route("/api/v{version}/slox_product_sync/bdropy/addmappings", name="api.slox_product_sync_old.bdropy.addmappings", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
      */
     public function bdropy_addmappings(Request $request): JsonResponse
     {
@@ -217,9 +210,8 @@ class adminConfigController extends AbstractController
     }
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/bdropy/deletemappings", name="api.slox_product_sync.bdropy.deletemappings", defaults={"auth_required"=false}, methods={"POST"})
-     * @Route("/api/v{version}/slox_product_sync/bdropy/deletemappings", name="api.slox_product_sync_old.bdropy.deletemappings", defaults={"auth_required"=false}, methods={"POST"})
+     * @Route("/api/slox_product_sync/bdropy/deletemappings", name="api.slox_product_sync.bdropy.deletemappings", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
+     * @Route("/api/v{version}/slox_product_sync/bdropy/deletemappings", name="api.slox_product_sync_old.bdropy.deletemappings", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
      */
     public function bdropy_deletemappings(Request $request): JsonResponse
     {
@@ -264,9 +256,8 @@ class adminConfigController extends AbstractController
     }
 
     /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/slox_product_sync/bdropy/deleteallmappings", name="api.slox_product_sync.bdropy.deleteallmappings", defaults={"auth_required"=false}, methods={"POST"})
-     * @Route("/api/v{version}/slox_product_sync/bdropy/deleteallmappings", name="api.slox_product_sync_old.bdropy.deleteallmappings", defaults={"auth_required"=false}, methods={"POST"})
+     * @Route("/api/slox_product_sync/bdropy/deleteallmappings", name="api.slox_product_sync.bdropy.deleteallmappings", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
+     * @Route("/api/v{version}/slox_product_sync/bdropy/deleteallmappings", name="api.slox_product_sync_old.bdropy.deleteallmappings", defaults={"_routeScope"={"api"},"auth_required"=false, "_acl"={"system.slox_product_sync"}}, methods={"POST"})
      */
     public function bdropy_deleteallmappings(Request $request): JsonResponse
     {
